@@ -1,0 +1,17 @@
+{
+    "name": "Draco.Sample.Encode",
+    "rootNamespace": "",
+    "references": [
+        "Draco",
+        "Draco.Encode"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
