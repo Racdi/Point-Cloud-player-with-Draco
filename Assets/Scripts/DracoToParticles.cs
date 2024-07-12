@@ -16,6 +16,7 @@ public class ParticlesFromData : MonoBehaviour{
     {
         VFX.SetFloat("Scale", particleScale);
         VFX.SetFloat("ParticleSize", particleSize);
+        VFX.Play();
     }
 
     public void Set(List<Vector3> vertices, List<Color32> colors)
@@ -51,8 +52,10 @@ public class ParticlesFromData : MonoBehaviour{
 
         _positionMap.Apply(false, true);
         _colorMap.Apply(false, true);
-        Debug.Log("ApplyNewMap");
+
         VFX.SetTexture("PositionMap", _positionMap);
         VFX.SetTexture("ColorMap", _colorMap);
+
+        VFX.Reinit();
     }
 }
