@@ -1,0 +1,3 @@
+Longdress\longdress_vox10_1051.ply
+Longdress\longdress_vox10_1052.ply
+Longdress\longdress_vox10_1053.ply

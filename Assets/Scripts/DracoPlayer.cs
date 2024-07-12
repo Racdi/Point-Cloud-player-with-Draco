@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
 using System;
-using CielaSpike;
 using System.Net;
 using System.Text.RegularExpressions;
 using UnityEngine.Networking;
@@ -42,6 +41,8 @@ using Draco;
         private float t;
         private int playIndex, lastPlayedIndex;
         private string[] dracoFiles;
+
+    private Mesh currentMesh;
 
         public int PlayIndex { get => playIndex; set => playIndex = value; }
 
@@ -123,17 +124,16 @@ using Draco;
             return "<a href=\"(?<name>.+drc)\">.+drc</a>";
         }
 
-        private async void Play(int index)
+        private void Play(int index)
         {
             //string[] plypaths = { "https://ateixs.me/ply/simple1.ply", "https://ateixs.me/ply/simple2.ply", "https://ateixs.me/ply/simple3.ply" };
             string filepath = dracoFiles[PlayIndex];
+            //Debug.Log(filepath);
 
-            //yield return this.StartCoroutineAsync(PlyImporter.Instance.ImportData(filepath, ReadMode, (data) => { plyData = data; }));
-            var data = File.ReadAllBytes(filepath);
-            var mesh = await DracoDecoder.DecodeMesh(data);
+            StartCoroutine(getRequest(filepath, OnRequestComplete));          
 
             bool dropFrames = false;
-            if (mesh != null)
+            if (currentMesh != null)
             {
                 if (lastPlayedIndex > index && index != 0)
                 {
@@ -144,19 +144,39 @@ using Draco;
 
                 if (!dropFrames)
                 {
-                    var verticesList = new List<Vector3>(mesh.vertices);
-                    var colorsList = new List<Color32>(mesh.colors32);
+                    var verticesList = new List<Vector3>(currentMesh.vertices);
+                    var colorsList = new List<Color32>(currentMesh.colors32);
 
-                    //Color32 defaultColor = new Color32(255, 255, 255, 255);
                     particlesScript.Set(verticesList, colorsList);
                     lastPlayedIndex = index;
                 }
             }
 
-            //gameObject.GetComponent<ParticlesFromVertices>().New(plyData.vertices, plyData.colors, 0.1f);
         }
+    
+    IEnumerator getRequest(string uri, System.Action<Stream> callbackOnFinish)
+    {
+        UnityWebRequest uwr = UnityWebRequest.Get(uri);
+        yield return uwr.SendWebRequest();
 
-        private void Update()
+        if (uwr.isNetworkError)
+        {
+            Debug.Log("Error While Sending: " + uwr.error);
+        }
+        else
+        {
+            callbackOnFinish(uwr.downloadHandler.data.GenerateStream());
+        }
+    }
+
+    async void OnRequestComplete(Stream stream)
+    {
+        var memoryStream = new MemoryStream();
+        stream.CopyTo(memoryStream);
+        currentMesh = await DracoDecoder.DecodeMesh(memoryStream.ToArray());
+    }
+
+    private void Update()
         {
             if (dracoFiles == null)
             {

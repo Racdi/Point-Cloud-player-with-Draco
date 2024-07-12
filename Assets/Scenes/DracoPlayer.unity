@@ -534,10 +534,10 @@ MonoBehaviour:
   OnObsoleteDataReceived:
     m_PersistentCalls:
       m_Calls: []
-  ReadMode: 1
-  RemoteHostPath: 
+  ReadMode: 0
+  RemoteHostPath: https://ateixs.me/ply/
   LocalPath: D:\UnityProjects\Draco\Point-Cloud-player-with-Draco\Assets\PointClouds\dracoLessSimple
-  StreamingAssetsPath: 
+  StreamingAssetsPath: Draco
   FPS: 30
   isLoop: 1
 --- !u!4 &6798676864414862247
