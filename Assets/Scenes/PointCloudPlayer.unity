@@ -225,7 +225,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3507158803170994802, guid: bd05a95dce721a94e852d3dc5532b5d4, type: 3}
       propertyPath: ReadMode
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3507158803170994802, guid: bd05a95dce721a94e852d3dc5532b5d4, type: 3}
       propertyPath: LocalPath
@@ -233,7 +233,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3507158803170994802, guid: bd05a95dce721a94e852d3dc5532b5d4, type: 3}
       propertyPath: RemoteHostPath
-      value: ateixs.me
+      value: https://ateixs.me/ply/
       objectReference: {fileID: 0}
     - target: {fileID: 3507158803170994802, guid: bd05a95dce721a94e852d3dc5532b5d4, type: 3}
       propertyPath: StreamingAssetsPath

@@ -121,7 +121,7 @@ namespace PCP
 
         public static string GetDirectoryListingRegexForUrl()
         {
-            return "<a href=\".*\">(?<name>.*)</a>";
+            return "<a href=\"(?<name>.+ply)\">.+ply</a>";
         }
 
         private IEnumerator Play(int index)
@@ -129,7 +129,7 @@ namespace PCP
             PlyImporter.DataBody plyData = null;
             //string[] plypaths = { "https://ateixs.me/ply/simple1.ply", "https://ateixs.me/ply/simple2.ply", "https://ateixs.me/ply/simple3.ply" };
             string filepath = plyFiles[PlayIndex]; //"https://ateixs.me/ply/simple1.ply";
-
+            Debug.Log(filepath);
             yield return this.StartCoroutineAsync(PlyImporter.Instance.ImportData(filepath, ReadMode, (data) => { plyData = data; }));
 
             bool dropFrames = false;

@@ -12,7 +12,6 @@ using PCP;
 using PCP.Utils;
 using Draco;
 
-[RequireComponent(typeof(ParticlesFromData))]
     public class DracoPlayer : MonoBehaviour
     {
         [HideInInspector]
@@ -121,7 +120,7 @@ using Draco;
 
         public static string GetDirectoryListingRegexForUrl()
         {
-            return "<a href=\".*\">(?<name>.*)</a>";
+            return "<a href=\"(?<name>.+drc)\">.+drc</a>";
         }
 
         private async void Play(int index)
