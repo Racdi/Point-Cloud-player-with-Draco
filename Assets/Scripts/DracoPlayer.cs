@@ -4,6 +4,7 @@ using UnityEngine;
 using System.IO;
 using System;
 using System.Net;
+using System.Text;
 using System.Text.RegularExpressions;
 using UnityEngine.Networking;
 using UnityEngine.Events;
@@ -124,15 +125,24 @@ using Draco;
             return "<a href=\"(?<name>.+drc)\">.+drc</a>";
         }
 
-        private void Play(int index)
+    private async void Play(int index)
+    {
+        //string[] plypaths = { "https://ateixs.me/ply/simple1.ply", "https://ateixs.me/ply/simple2.ply", "https://ateixs.me/ply/simple3.ply" };
+        string filepath = dracoFiles[PlayIndex];
+        //Debug.Log(filepath);
+        if(ReadMode == DataReadModes.Remote)
         {
-            //string[] plypaths = { "https://ateixs.me/ply/simple1.ply", "https://ateixs.me/ply/simple2.ply", "https://ateixs.me/ply/simple3.ply" };
-            string filepath = dracoFiles[PlayIndex];
-            //Debug.Log(filepath);
+            StartCoroutine(getRequest(filepath, OnRequestComplete));
+        }
+        else
+        {
+            StreamReader reader = new StreamReader(filepath);
+            var loadedmesh = reader.ReadToEnd();
+            currentMesh = await DracoDecoder.DecodeMesh(Encoding.ASCII.GetBytes(loadedmesh));
+            reader.Close();
+        }
 
-            StartCoroutine(getRequest(filepath, OnRequestComplete));          
-
-            bool dropFrames = false;
+        bool dropFrames = false;
             if (currentMesh != null)
             {
                 if (lastPlayedIndex > index && index != 0)
@@ -151,7 +161,6 @@ using Draco;
                     lastPlayedIndex = index;
                 }
             }
-
         }
     
     IEnumerator getRequest(string uri, System.Action<Stream> callbackOnFinish)
@@ -159,7 +168,7 @@ using Draco;
         UnityWebRequest uwr = UnityWebRequest.Get(uri);
         yield return uwr.SendWebRequest();
 
-        if (uwr.isNetworkError)
+        if (uwr.result == UnityWebRequest.Result.ConnectionError)
         {
             Debug.Log("Error While Sending: " + uwr.error);
         }
