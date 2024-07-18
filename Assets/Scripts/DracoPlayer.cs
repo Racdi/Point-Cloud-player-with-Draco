@@ -129,17 +129,20 @@ using Draco;
     {
         //string[] plypaths = { "https://ateixs.me/ply/simple1.ply", "https://ateixs.me/ply/simple2.ply", "https://ateixs.me/ply/simple3.ply" };
         string filepath = dracoFiles[PlayIndex];
-        //Debug.Log(filepath);
+        Debug.Log(filepath);
         if(ReadMode == DataReadModes.Remote)
         {
             StartCoroutine(getRequest(filepath, OnRequestComplete));
         }
         else
         {
-            StreamReader reader = new StreamReader(filepath);
-            var loadedmesh = reader.ReadToEnd();
-            currentMesh = await DracoDecoder.DecodeMesh(Encoding.ASCII.GetBytes(loadedmesh));
-            reader.Close();
+            using (var loadedmesh = File.Open(filepath, FileMode.Open))
+            {
+                var memoryString = new MemoryStream();
+                loadedmesh.CopyTo(memoryString);
+                currentMesh = await DracoDecoder.DecodeMesh(memoryString.ToArray());
+                memoryString.Dispose();
+            }
         }
 
         bool dropFrames = false;
