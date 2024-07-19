@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.VFX;
 
-public class ParticlesFromData : MonoBehaviour{
+public class DracoToParticles : MonoBehaviour{
     public VisualEffect VFX;
 
     public float particleScale = 1;

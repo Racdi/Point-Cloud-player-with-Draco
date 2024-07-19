@@ -47,11 +47,11 @@ using Draco;
 
         public int PlayIndex { get => playIndex; set => playIndex = value; }
 
-        private ParticlesFromData particlesScript;
+        private DracoToParticles particlesScript;
 
         private void OnEnable()
         {
-            particlesScript = gameObject.GetComponent<ParticlesFromData>();
+            particlesScript = gameObject.GetComponent<DracoToParticles>();
             PlayIndex = 0;
             UpdateDracoFiles();
         }
@@ -186,6 +186,7 @@ using Draco;
         var memoryStream = new MemoryStream();
         stream.CopyTo(memoryStream);
         currentMesh = await DracoDecoder.DecodeMesh(memoryStream.ToArray());
+        memoryStream.Dispose();
     }
 
     private void Update()
