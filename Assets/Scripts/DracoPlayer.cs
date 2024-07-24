@@ -43,6 +43,8 @@ using Draco;
         private int playIndex, lastPlayedIndex;
         private string[] dracoFiles;
 
+    public StatusMonitor monitor;
+
     private Mesh currentMesh;
 
         public int PlayIndex { get => playIndex; set => playIndex = value; }
@@ -115,10 +117,18 @@ using Draco;
                             }
                         }
                     }
+                else
+                {
+                    monitor.SetText("No matches found!");
+                }
                     callback(paths.ToArray());
                 }
             }
+        else
+        {
+            monitor.SetText("Web request failed\nURL is:" + url);
         }
+    }
 
         public static string GetDirectoryListingRegexForUrl()
         {
@@ -129,7 +139,7 @@ using Draco;
     {
         //string[] plypaths = { "https://ateixs.me/ply/simple1.ply", "https://ateixs.me/ply/simple2.ply", "https://ateixs.me/ply/simple3.ply" };
         string filepath = dracoFiles[PlayIndex];
-        //Debug.Log(filepath);
+        Debug.Log(filepath);
         if(ReadMode == DataReadModes.Remote)
         {
             StartCoroutine(getRequest(filepath, OnRequestComplete));
@@ -174,6 +184,10 @@ using Draco;
         if (uwr.result == UnityWebRequest.Result.ConnectionError)
         {
             Debug.Log("Error While Sending: " + uwr.error);
+            if(monitor != null)
+            {
+                monitor.SetText("Web Request error: " + uwr.error);
+            }
         }
         else
         {
