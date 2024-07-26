@@ -2400,10 +2400,10 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   ReadMode: 0
-  RemoteHostPath: https://ateixs.me:443/ply1/
+  RemoteHostPath: http://10.1.1.5:8080/ply1/
   LocalPath: D:\PointClouds\Classic\longdress\draco
   StreamingAssetsPath: Flower_DRC
-  FPS: 30
+  FPS: 15
   isLoop: 1
   monitor: {fileID: 6798676864414862249}
 --- !u!4 &6798676864414862247

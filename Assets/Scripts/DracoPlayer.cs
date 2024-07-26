@@ -139,7 +139,7 @@ using Draco;
     {
         //string[] plypaths = { "https://ateixs.me/ply/simple1.ply", "https://ateixs.me/ply/simple2.ply", "https://ateixs.me/ply/simple3.ply" };
         string filepath = dracoFiles[PlayIndex];
-        Debug.Log(filepath);
+        //Debug.Log(filepath);
         if(ReadMode == DataReadModes.Remote)
         {
             StartCoroutine(getRequest(filepath, OnRequestComplete));
@@ -176,7 +176,7 @@ using Draco;
             }
         }
     
-    IEnumerator getRequest(string uri, System.Action<Stream> callbackOnFinish)
+    IEnumerator getRequest(string uri, System.Action<byte[]> callbackOnFinish)
     {
         UnityWebRequest uwr = UnityWebRequest.Get(uri);
         yield return uwr.SendWebRequest();
@@ -191,15 +191,14 @@ using Draco;
         }
         else
         {
-            callbackOnFinish(uwr.downloadHandler.data.GenerateStream());
+            callbackOnFinish(uwr.downloadHandler.data);
         }
     }
 
-    async void OnRequestComplete(Stream stream)
+    async void OnRequestComplete(byte[] stream)
     {
-        var memoryStream = new MemoryStream();
-        stream.CopyTo(memoryStream);
-        currentMesh = await DracoDecoder.DecodeMesh(memoryStream.ToArray());
+    // Async decoding has to start on the main thread and spawns multiple C# jobs.
+        currentMesh = await DracoDecoder.DecodeMesh(stream);
     }
 
     private void Update()
