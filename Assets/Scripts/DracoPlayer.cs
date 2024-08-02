@@ -53,6 +53,7 @@ using Draco;
 
         private void OnEnable()
         {
+            currentMesh = new Mesh();
             particlesScript = gameObject.GetComponent<ParticlesFromData>();
             PlayIndex = 0;
             UpdateDracoFiles();
@@ -193,12 +194,17 @@ using Draco;
         {
             callbackOnFinish(uwr.downloadHandler.data);
         }
+        uwr.Dispose();
     }
 
     async void OnRequestComplete(byte[] stream)
     {
-    // Async decoding has to start on the main thread and spawns multiple C# jobs.
-        currentMesh = await DracoDecoder.DecodeMesh(stream);
+        // Async decoding has to start on the main thread and spawns multiple C# jobs.
+        //currentMesh = new Mesh();
+        var meshDataArray = Mesh.AllocateWritableMeshData(1);
+        var result = await DracoDecoder.DecodeMesh(meshDataArray[0], stream);
+        //currentMesh = await DracoDecoder.DecodeMesh(stream);
+        Mesh.ApplyAndDisposeWritableMeshData(meshDataArray, currentMesh);
     }
 
     private void Update()
