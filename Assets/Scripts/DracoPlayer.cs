@@ -140,7 +140,7 @@ using Draco;
     {
         //string[] plypaths = { "https://ateixs.me/ply/simple1.ply", "https://ateixs.me/ply/simple2.ply", "https://ateixs.me/ply/simple3.ply" };
         string filepath = dracoFiles[PlayIndex];
-        Debug.Log(filepath);
+        //Debug.Log(filepath);
         if(ReadMode == DataReadModes.Remote)
         {
             StartCoroutine(getRequest(filepath, OnRequestComplete));
