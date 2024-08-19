@@ -2400,7 +2400,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   ReadMode: 0
-  RemoteHostPath: http://10.1.1.5:8080/dracoSimple/
+  RemoteHostPath: http://10.1.5.1:8080/dracoSimple/
   LocalPath: D:\PointClouds\Classic\longdress\dracoSimple
   StreamingAssetsPath: Flower_DRC
   FPS: 30

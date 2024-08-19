@@ -49,12 +49,12 @@ using Draco;
 
         public int PlayIndex { get => playIndex; set => playIndex = value; }
 
-        private ParticlesFromData particlesScript;
+        private DracoToParticles particlesScript;
 
         private void OnEnable()
         {
             currentMesh = new Mesh();
-            particlesScript = gameObject.GetComponent<ParticlesFromData>();
+            particlesScript = gameObject.GetComponent<DracoToParticles>();
             PlayIndex = 0;
             UpdateDracoFiles();
         }
