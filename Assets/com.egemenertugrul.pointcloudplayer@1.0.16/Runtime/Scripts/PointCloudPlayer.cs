@@ -129,7 +129,7 @@ namespace PCP
             PlyImporter.DataBody plyData = null;
             //string[] plypaths = { "https://ateixs.me/ply/simple1.ply", "https://ateixs.me/ply/simple2.ply", "https://ateixs.me/ply/simple3.ply" };
             string filepath = plyFiles[PlayIndex]; //"https://ateixs.me/ply/simple1.ply";
-            Debug.Log(filepath);
+            //Debug.Log(filepath);
             yield return this.StartCoroutineAsync(PlyImporter.Instance.ImportData(filepath, ReadMode, (data) => { plyData = data; }));
 
             bool dropFrames = false;
@@ -159,7 +159,7 @@ namespace PCP
                 return;
             }
 
-            Debug.Log(plyFiles.Length);
+            //Debug.Log(plyFiles.Length);
             FPS = Mathf.Max(1, FPS);
 
             t += Time.deltaTime;

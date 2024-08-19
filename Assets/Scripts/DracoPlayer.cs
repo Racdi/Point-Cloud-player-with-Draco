@@ -43,15 +43,18 @@ using Draco;
         private int playIndex, lastPlayedIndex;
         private string[] dracoFiles;
 
+    public StatusMonitor monitor;
+
     private Mesh currentMesh;
 
         public int PlayIndex { get => playIndex; set => playIndex = value; }
 
-        private DracoToParticles particlesScript;
+        private ParticlesFromData particlesScript;
 
         private void OnEnable()
         {
-            particlesScript = gameObject.GetComponent<DracoToParticles>();
+            currentMesh = new Mesh();
+            particlesScript = gameObject.GetComponent<ParticlesFromData>();
             PlayIndex = 0;
             UpdateDracoFiles();
         }
@@ -115,10 +118,18 @@ using Draco;
                             }
                         }
                     }
+                else
+                {
+                    monitor.SetText("No matches found!");
+                }
                     callback(paths.ToArray());
                 }
             }
+        else
+        {
+            monitor.SetText("Web request failed\nURL is:" + url);
         }
+    }
 
         public static string GetDirectoryListingRegexForUrl()
         {
@@ -166,7 +177,7 @@ using Draco;
             }
         }
     
-    IEnumerator getRequest(string uri, System.Action<Stream> callbackOnFinish)
+    IEnumerator getRequest(string uri, System.Action<byte[]> callbackOnFinish)
     {
         UnityWebRequest uwr = UnityWebRequest.Get(uri);
         yield return uwr.SendWebRequest();
@@ -174,19 +185,26 @@ using Draco;
         if (uwr.result == UnityWebRequest.Result.ConnectionError)
         {
             Debug.Log("Error While Sending: " + uwr.error);
+            if(monitor != null)
+            {
+                monitor.SetText("Web Request error: " + uwr.error);
+            }
         }
         else
         {
-            callbackOnFinish(uwr.downloadHandler.data.GenerateStream());
+            callbackOnFinish(uwr.downloadHandler.data);
         }
+        uwr.Dispose();
     }
 
-    async void OnRequestComplete(Stream stream)
+    async void OnRequestComplete(byte[] stream)
     {
-        var memoryStream = new MemoryStream();
-        stream.CopyTo(memoryStream);
-        currentMesh = await DracoDecoder.DecodeMesh(memoryStream.ToArray());
-        memoryStream.Dispose();
+        // Async decoding has to start on the main thread and spawns multiple C# jobs.
+        //currentMesh = new Mesh();
+        var meshDataArray = Mesh.AllocateWritableMeshData(1);
+        var result = await DracoDecoder.DecodeMesh(meshDataArray[0], stream);
+        //currentMesh = await DracoDecoder.DecodeMesh(stream);
+        Mesh.ApplyAndDisposeWritableMeshData(meshDataArray, currentMesh);
     }
 
     private void Update()
