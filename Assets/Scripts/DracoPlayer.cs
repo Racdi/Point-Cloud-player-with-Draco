@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Threading.Tasks;
 using System.IO;
 using System;
 using System.Net;
@@ -12,136 +13,134 @@ using PCP;
 using PCP.Utils;
 using Draco;
 
-    public class DracoPlayer : MonoBehaviour
-    {
-        [HideInInspector]
-        public UnityEvent OnObsoleteDataReceived = new UnityEvent();
+public class DracoPlayer : MonoBehaviour
+{
+    //[HideInInspector]
+    //public UnityEvent OnObsoleteDataReceived = new UnityEvent();
 
-        public enum DataReadModes { Remote, Local, StreamingAssets }
-        public DataReadModes ReadMode;
+    public enum DataReadModes { Remote, Local, StreamingAssets }
+    public DataReadModes ReadMode;
 
-        /// <summary>
-        /// Path to a remote http server directory (i.e. http://localhost:8000/Recording_1/ , served by 'python -m http.server')
-        /// </summary>
-        public string RemoteHostPath;
+    /// <summary>
+    /// Path to a remote http server directory (i.e. http://localhost:8000/Recording_1/ , served by 'python -m http.server')
+    /// </summary>
+    public string RemoteHostPath;
 
-        /// <summary>
-        /// Path to a local directory (i.e. C:/../Recording_1/)
-        /// </summary>
-        public string LocalPath;
+    /// <summary>
+    /// Path to a local directory (i.e. C:/../Recording_1/)
+    /// </summary>
+    public string LocalPath;
 
-        /// <summary>
-        /// Path to a streaming asset directory (i.e. Recording_1) <br/>
-        /// <b>NOTE:</b> It works in conjunction with AssetIndexerBuildProcessor.cs for accessing files in standalone (non-editor) builds.
-        /// </summary>
-        public string StreamingAssetsPath;
+    /// <summary>
+    /// Path to a streaming asset directory (i.e. Recording_1) <br/>
+    /// <b>NOTE:</b> It works in conjunction with AssetIndexerBuildProcessor.cs for accessing files in standalone (non-editor) builds.
+    /// </summary>
+    public string StreamingAssetsPath;
 
-        public int FPS = 30;
-        public bool isLoop = true;
+    public int FPS = 30;
+    public bool isLoop = true;
 
-        private float t;
-        private int playIndex, lastPlayedIndex;
-        private string[] dracoFiles;
+    private float t;
+    private int playIndex, lastPlayedIndex;
+    private string[] dracoFiles;
 
     public StatusMonitor monitor;
 
     private Mesh currentMesh;
 
-        public int PlayIndex { get => playIndex; set => playIndex = value; }
+    public int PlayIndex { get => playIndex; set => playIndex = value; }
 
-        private DracoToParticles particlesScript;
+    private DracoToParticles particlesScript;
 
-        private void OnEnable()
+    private void OnEnable()
+    {
+        currentMesh = new Mesh();
+        particlesScript = gameObject.GetComponent<DracoToParticles>();
+        PlayIndex = 0;
+        UpdateDracoFiles();
+    }
+
+    private void UpdateDracoFiles()
+    {
+        if (ReadMode == DataReadModes.Local)
+            dracoFiles = Directory.GetFiles(LocalPath, "*.drc");
+        else if (ReadMode == DataReadModes.StreamingAssets)
         {
-            currentMesh = new Mesh();
-            particlesScript = gameObject.GetComponent<DracoToParticles>();
-            PlayIndex = 0;
-            UpdateDracoFiles();
-        }
-
-        private void UpdateDracoFiles()
-        {
-            if (ReadMode == DataReadModes.Local)
-                dracoFiles = Directory.GetFiles(LocalPath, "*.drc");
-            else if (ReadMode == DataReadModes.StreamingAssets)
-            {
 #if UNITY_EDITOR
                 dracoFiles = Directory.GetFiles(Path.Combine(Application.streamingAssetsPath, StreamingAssetsPath), "*.drc");
 #else
-                List<string> dracoFilesList = ReadAssetIndexer();
-                dracoFiles = dracoFilesList.ToArray();
+            List<string> dracoFilesList = ReadAssetIndexer();
+            dracoFiles = dracoFilesList.ToArray();
 #endif
-            }
-            else if (ReadMode == DataReadModes.Remote)
-                StartCoroutine(GetFilesFromHTTP(RemoteHostPath, (val) => { dracoFiles = val; }));
+        }
+        else if (ReadMode == DataReadModes.Remote)
+            StartCoroutine(GetFilesFromHTTP(RemoteHostPath, (val) => { dracoFiles = val; }));
+    }
+
+    private List<string> ReadAssetIndexer()
+    {
+        List<string> plyFilesList = new List<string>();
+        TextAsset paths = Resources.Load<TextAsset>(Path.Combine(AssetIndexerConfig.BaseDirectory, StreamingAssetsPath, "paths"));
+        string fs = paths.text;
+        string[] fLines = Regex.Split(fs, "\n|\r|\r\n");
+
+        foreach (string line in fLines)
+        {
+            if (line.Length > 0)
+                plyFilesList.Add(line);
         }
 
-        private List<string> ReadAssetIndexer()
+        return plyFilesList;
+    }
+
+    private IEnumerator GetFilesFromHTTP(string url, Action<string[]> callback)
+    {
+        List<string> paths = new List<string>();
+        UnityWebRequest webRequest = UnityWebRequest.Get(url);
+        yield return webRequest.SendWebRequest();
+
+        if (webRequest.result == UnityWebRequest.Result.Success)
         {
-            List<string> plyFilesList = new List<string>();
-            TextAsset paths = Resources.Load<TextAsset>(Path.Combine(AssetIndexerConfig.BaseDirectory, StreamingAssetsPath, "paths"));
-            string fs = paths.text;
-            string[] fLines = Regex.Split(fs, "\n|\r|\r\n");
-
-            foreach (string line in fLines)
+            using (StreamReader reader = new StreamReader(webRequest.downloadHandler.text.GenerateStream()))
             {
-                if (line.Length > 0)
-                    plyFilesList.Add(line);
-            }
-
-            return plyFilesList;
-        }
-
-        private IEnumerator GetFilesFromHTTP(string url, Action<string[]> callback)
-        {
-            List<string> paths = new List<string>();
-            UnityWebRequest webRequest = UnityWebRequest.Get(url);
-            yield return webRequest.SendWebRequest();
-
-            if (webRequest.result == UnityWebRequest.Result.Success)
-            {
-                using (StreamReader reader = new StreamReader(webRequest.downloadHandler.text.GenerateStream()))
+                string html = reader.ReadToEnd();
+                Regex regex = new Regex(GetDirectoryListingRegexForUrl());
+                MatchCollection matches = regex.Matches(html);
+                if (matches.Count > 0)
                 {
-                    string html = reader.ReadToEnd();
-                    Regex regex = new Regex(GetDirectoryListingRegexForUrl());
-                    MatchCollection matches = regex.Matches(html);
-                    if (matches.Count > 0)
+                    foreach (Match match in matches)
                     {
-                        foreach (Match match in matches)
+                        if (match.Success)
                         {
-                            if (match.Success)
-                            {
-                                string value = match.Groups["name"].Value;
-                                string path = Path.Combine(url, value);
-                                paths.Add(path);
-                                //print(path);
-                            }
+                            string value = match.Groups["name"].Value;
+                            string path = Path.Combine(url, value);
+                            paths.Add(path);
+                            //print(path);
                         }
                     }
+                }
                 else
                 {
                     monitor.SetText("No matches found!");
                 }
-                    callback(paths.ToArray());
-                }
+                callback(paths.ToArray());
             }
+        }
         else
         {
             monitor.SetText("Web request failed\nURL is:" + url);
         }
     }
 
-        public static string GetDirectoryListingRegexForUrl()
-        {
-            return "<a href=\"(?<name>.+drc)\">.+drc</a>";
-        }
-
-    private async void Play(int index)
+    public static string GetDirectoryListingRegexForUrl()
     {
-        //string[] plypaths = { "https://ateixs.me/ply/simple1.ply", "https://ateixs.me/ply/simple2.ply", "https://ateixs.me/ply/simple3.ply" };
+        return "<a href=\"(?<name>.+drc)\">.+drc</a>";
+    }
+
+    private async Task Play(int index)
+    {
         string filepath = dracoFiles[PlayIndex];
-        //Debug.Log(filepath);
-        if(ReadMode == DataReadModes.Remote)
+        if (ReadMode == DataReadModes.Remote)
         {
             StartCoroutine(getRequest(filepath, OnRequestComplete));
         }
@@ -157,42 +156,44 @@ using Draco;
         }
 
         bool dropFrames = false;
-            if (currentMesh != null)
+        if (currentMesh != null)
+        {
+            if (lastPlayedIndex > index && index != 0)
             {
-                if (lastPlayedIndex > index && index != 0)
-                {
-                    //print("Obsolete data received");
-                    OnObsoleteDataReceived.Invoke();
-                    dropFrames = true;
-                }
+                //print("Obsolete data received");
+                //OnObsoleteDataReceived.Invoke();
+                dropFrames = true;
+            }
 
-                if (!dropFrames)
-                {
-                    var verticesList = new List<Vector3>(currentMesh.vertices);
-                    var colorsList = new List<Color32>(currentMesh.colors32);
+            if (!dropFrames)
+            {
+                var verticesList = new List<Vector3>(currentMesh.vertices);
+                var colorsList = new List<Color32>(currentMesh.colors32);
 
-                    particlesScript.Set(verticesList, colorsList);
-                    lastPlayedIndex = index;
-                }
+                particlesScript.Set(verticesList, colorsList);
+                lastPlayedIndex = index;
             }
         }
-    
+    }
+
     IEnumerator getRequest(string uri, System.Action<byte[]> callbackOnFinish)
     {
         UnityWebRequest uwr = UnityWebRequest.Get(uri);
+        uwr.downloadHandler = new DownloadHandlerBuffer();
         yield return uwr.SendWebRequest();
 
         if (uwr.result == UnityWebRequest.Result.ConnectionError)
         {
             Debug.Log("Error While Sending: " + uwr.error);
-            if(monitor != null)
+            if (monitor != null)
             {
                 monitor.SetText("Web Request error: " + uwr.error);
             }
         }
         else
         {
-            callbackOnFinish(uwr.downloadHandler.data);
+            byte[] results = uwr.downloadHandler.data;
+            callbackOnFinish(results);
         }
         uwr.Dispose();
     }
@@ -208,29 +209,30 @@ using Draco;
     }
 
     private void Update()
+    {
+        if (dracoFiles == null)
         {
-            if (dracoFiles == null)
+            return;
+        }
+
+        FPS = Mathf.Max(1, FPS);
+
+        t += Time.deltaTime;
+
+        if (dracoFiles.Length > 0 && t >= 1f / FPS)
+        {
+            t = 0;
+            PlayIndex++;
+            if (PlayIndex >= dracoFiles.Length) //dracoFiles.Length
             {
-                return;
-            }
-
-            FPS = Mathf.Max(1, FPS);
-
-            t += Time.deltaTime;
-
-            if (dracoFiles.Length > 0 && t >= 1f / FPS)
-            {
-                t = 0;
-                if (PlayIndex < dracoFiles.Length) //dracoFiles.Length
+                playIndex = 0;
+                if (isLoop == false)
                 {
-                    Play(playIndex);
-                    ++PlayIndex;
-                }
-                else if (isLoop)
-                {
-                    PlayIndex = 0;
+                    return;
                 }
             }
 
+            Play(PlayIndex);
         }
     }
+}
