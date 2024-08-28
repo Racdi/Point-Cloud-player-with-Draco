@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.80043024, g: 0.8214231, b: 0.9037182, a: 1}
+  m_IndirectSpecularColor: {r: 0.7565189, g: 0.77679825, b: 0.8570716, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -2400,7 +2400,7 @@ MonoBehaviour:
   RemoteHostPath: http://10.1.5.1:8080/dracoSimple/
   LocalPath: D:\PointClouds\Classic\longdress\dracoSimple
   StreamingAssetsPath: Flower_DRC
-  FPS: 90
+  FPS: 15
   isLoop: 1
   monitor: {fileID: 6798676864414862249}
 --- !u!4 &6798676864414862247
