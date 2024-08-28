@@ -2400,7 +2400,7 @@ MonoBehaviour:
   RemoteHostPath: http://10.1.5.1:8080/dracoSimple/
   LocalPath: D:\PointClouds\Classic\longdress\dracoSimple
   StreamingAssetsPath: Flower_DRC
-  FPS: 60
+  FPS: 90
   isLoop: 1
   monitor: {fileID: 6798676864414862249}
 --- !u!4 &6798676864414862247
