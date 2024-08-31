@@ -15,8 +15,8 @@ using Draco;
 
 public class DracoPlayer : MonoBehaviour
 {
-    //[HideInInspector]
-    //public UnityEvent OnObsoleteDataReceived = new UnityEvent();
+    [HideInInspector]
+    public UnityEvent OnObsoleteDataReceived = new UnityEvent();
 
     public enum DataReadModes { Remote, Local, StreamingAssets }
     public DataReadModes ReadMode;
@@ -45,6 +45,7 @@ public class DracoPlayer : MonoBehaviour
     private string[] dracoFiles;
 
     public StatusMonitor monitor;
+    public AnimationFPSCounter counter;
 
     private Mesh currentMesh;
 
@@ -161,7 +162,7 @@ public class DracoPlayer : MonoBehaviour
             if (lastPlayedIndex > index && index != 0)
             {
                 //print("Obsolete data received");
-                //OnObsoleteDataReceived.Invoke();
+                OnObsoleteDataReceived.Invoke();
                 dropFrames = true;
             }
 
@@ -170,7 +171,7 @@ public class DracoPlayer : MonoBehaviour
                 var verticesList = new List<Vector3>(currentMesh.vertices);
                 var colorsList = new List<Color32>(currentMesh.colors32);
 
-                particlesScript.Set(verticesList, colorsList);
+                await particlesScript.Set(verticesList, colorsList);
                 lastPlayedIndex = index;
             }
         }
@@ -215,13 +216,14 @@ public class DracoPlayer : MonoBehaviour
             return;
         }
 
-        FPS = Mathf.Max(1, FPS);
+        //FPS = Mathf.Max(1, FPS);
 
         t += Time.deltaTime;
 
         if (dracoFiles.Length > 0 && t >= 1f / FPS)
         {
-            t = 0;
+            counter.Iterate(t);
+            t = 0;//-= 1/FPS;
             PlayIndex++;
             if (PlayIndex >= dracoFiles.Length) //dracoFiles.Length
             {

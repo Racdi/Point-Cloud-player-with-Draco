@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Burst;
 using Unity.Mathematics;
+using UnityEngine.Events;
+using System.Threading.Tasks;
 using Unity.Jobs;
 using Unity.Collections;
 using UnityEngine.Jobs;
@@ -24,7 +26,7 @@ public class DracoToParticles : MonoBehaviour {
         VFX.Play();
     }
 
-    public void Set(List<Vector3> vertices, List<Color32> colors)
+    public async Task Set(List<Vector3> vertices, List<Color32> colors)
     {
         //Taken from PCX importer
         var _pointCount = vertices.Count;
