@@ -209,6 +209,17 @@ public class DracoPlayer : MonoBehaviour
         Mesh.ApplyAndDisposeWritableMeshData(meshDataArray, currentMesh);
     }
 
+    public void SetNewAddress(string newAddress)
+    {
+        RemoteHostPath = newAddress;
+    }
+
+    public void Reconnect()
+    {
+        ReadMode = DataReadModes.Remote;
+        UpdateDracoFiles();
+    }
+
     private void Update()
     {
         if (dracoFiles == null)
