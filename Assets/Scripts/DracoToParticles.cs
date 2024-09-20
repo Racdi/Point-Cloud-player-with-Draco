@@ -14,7 +14,7 @@ public class DracoToParticles : MonoBehaviour {
     public VisualEffect VFX;
 
     public float particleScale = 1;
-    public float particleSize = 0.02f;
+    public float particleSize = 5;
 
 
     // Use this for initialization
@@ -24,6 +24,12 @@ public class DracoToParticles : MonoBehaviour {
         VFX.SetFloat("Scale", particleScale);
         VFX.SetFloat("ParticleSize", particleSize);
         VFX.Play();
+    }
+
+    public void ChangeParticleSize(float newSize)
+    {
+        particleSize = newSize;
+        VFX.SetFloat("ParticleSize", newSize);
     }
 
     public async Task Set(List<Vector3> vertices, List<Color32> colors)

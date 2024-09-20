@@ -220,6 +220,15 @@ public class DracoPlayer : MonoBehaviour
         UpdateDracoFiles();
     }
 
+    public void ChangeFramerate(string newFramerate)
+    {
+        int checkOutput;
+        if (Int32.TryParse(newFramerate, out checkOutput))
+        {
+            FPS = checkOutput;
+        }
+    }
+
     private void Update()
     {
         if (dracoFiles == null)
