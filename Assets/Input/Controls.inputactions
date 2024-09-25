@@ -1,0 +1,76 @@
+{
+    "name": "Controls",
+    "maps": [
+        {
+            "name": "XR",
+            "id": "513107af-465d-463e-b58f-4b7b0eef15ff",
+            "actions": [
+                {
+                    "name": "HideUI",
+                    "type": "Button",
+                    "id": "cb0a210b-e7f8-4292-bf10-fbabacd81149",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "ShowUI",
+                    "type": "Button",
+                    "id": "b8238fc5-588d-464f-aa8e-0ebc6cc53ffa",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "5c3560c8-4292-45be-b203-4f6016360352",
+                    "path": "*/{PrimaryButton}",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "XRControlScheme",
+                    "action": "ShowUI",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "4a4f9d3c-f894-49ec-96ec-6966d73eecb4",
+                    "path": "*/{SecondaryButton}",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "XRControlScheme",
+                    "action": "HideUI",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": [
+        {
+            "name": "XRControlScheme",
+            "bindingGroup": "XRControlScheme",
+            "devices": [
+                {
+                    "devicePath": "<XRController>{RightHand}",
+                    "isOptional": false,
+                    "isOR": false
+                },
+                {
+                    "devicePath": "<XRController>{LeftHand}",
+                    "isOptional": false,
+                    "isOR": false
+                },
+                {
+                    "devicePath": "<XRHMD>",
+                    "isOptional": false,
+                    "isOR": false
+                }
+            ]
+        }
+    ]
+}
