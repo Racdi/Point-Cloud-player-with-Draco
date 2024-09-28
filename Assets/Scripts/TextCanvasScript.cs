@@ -12,18 +12,18 @@ public class TextCanvasScript : MonoBehaviour
 
     void Awake()
     {
-        controls.XR.HideUI.performed += _ => HideUI();
-        controls.XR.ShowUI.performed += _ => ShowUI();
+        //controls.XR.HideUI.performed += _ => HideUI();
+        //controls.XR.ShowUI.performed += _ => ShowUI();
     }
 
     void OnEnable()
     {
-        controls.Enable();
+        //controls.Enable();
     }
 
     void OnDisable()
     {
-        controls.Disable();
+        //controls.Disable();
     }
 
     void HideUI()

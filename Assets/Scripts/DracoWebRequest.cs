@@ -13,7 +13,7 @@ using PCP;
 using PCP.Utils;
 using Draco;
 
-public class DracoPlayer : MonoBehaviour
+public class DracoWebRequest : MonoBehaviour
 {
     [HideInInspector]
     public UnityEvent OnObsoleteDataReceived = new UnityEvent();

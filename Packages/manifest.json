@@ -9,6 +9,7 @@
     }
   ],
   "dependencies": {
+    "com.endel.nativewebsocket": "https://github.com/endel/NativeWebSocket.git#upm",
     "com.unity.cloud.draco": "5.1.4",
     "com.unity.collab-proxy": "2.4.3",
     "com.unity.collections": "2.2.1",
