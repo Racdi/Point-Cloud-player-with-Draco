@@ -110,8 +110,12 @@ public class DracoRTC : MonoBehaviour
         if (candidate != null)
         {
             Debug.Log($"{GetName(pc)} ICE candidate: {candidate.Candidate}");
-            string candidateMessage = $"ice:candidate\n{candidate.Candidate}";
+            string candidateMessage = $"ice:candidate\n{candidate.Candidate}\nsdpMid:{candidate.SdpMid}\nsdpMLineIndex:{candidate.SdpMLineIndex}";
             SendSignalingMessage(candidateMessage);
+        }
+        else
+        {
+            Debug.Log("ICE candidate is null!");
         }
     }
 
