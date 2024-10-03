@@ -181,7 +181,7 @@ public class DracoRTC : MonoBehaviour
             OnSetLocalSuccess(pc1);
 
             // Send the offer SDP to the signaling server via WebSocket
-            string offerMessage = $"sdp:offer\n{desc.sdp}";
+            string offerMessage = $"sdp:offer\n{desc.sdp}\r\n";
             SendSignalingMessage(offerMessage);
         }
         else
@@ -226,6 +226,7 @@ public class DracoRTC : MonoBehaviour
 
     private async void SendSignalingMessage(string message)
     {
+        Debug.Log("Sending message:" + message);
         if (websocket.State == WebSocketState.Open)
         {
             await websocket.SendText(message);
@@ -234,6 +235,7 @@ public class DracoRTC : MonoBehaviour
 
     private void HandleSignalingMessage(string message)
     {
+        Debug.Log("Received signaling message");
         string[] lines = message.Split(new[] { "\r\n", "\n" }, System.StringSplitOptions.None);
 
         if (lines[0].StartsWith("sdp:"))
