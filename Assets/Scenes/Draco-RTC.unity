@@ -1216,7 +1216,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 474800374}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1932556717}
+        m_TargetAssemblyTypeName: WebRTCTutorial.WebRTCCloudManager, Assembly-CSharp
+        m_MethodName: Connect
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &474800374
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2355,7 +2367,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1685034875}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1932556717}
+        m_TargetAssemblyTypeName: WebRTCTutorial.WebRTCCloudManager, Assembly-CSharp
+        m_MethodName: Disconnect
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1685034875
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2442,6 +2466,8 @@ GameObject:
   - component: {fileID: 1932556716}
   - component: {fileID: 1932556714}
   - component: {fileID: 1932556713}
+  - component: {fileID: 1932556718}
+  - component: {fileID: 1932556717}
   m_Layer: 0
   m_Name: DracoPlayer
   m_TagString: Untagged
@@ -2499,13 +2525,38 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1932556711}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 49b44596aaf154643a6c29486b16b58f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   callButton: {fileID: 474800373}
   hangupButton: {fileID: 1685034874}
+--- !u!114 &1932556717
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1932556711}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9201eebefb0c53542bada5e97b0dc581, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1932556718
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1932556711}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b07ca11a4e3efa94ba4a762cd8502286, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  url: ws://10.1.2.159:8080
 --- !u!1001 &2067214765
 PrefabInstance:
   m_ObjectHideFlags: 0

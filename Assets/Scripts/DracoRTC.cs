@@ -141,6 +141,7 @@ public class DracoRTC : MonoBehaviour
         pc2 = new RTCPeerConnection(ref configuration);
         pc2.OnIceCandidate = pc2OnIceCandidate;
         pc2.OnIceConnectionChange = pc2OnIceConnectionChange;
+
         pc2.OnDataChannel = onDataChannel;
 
         RTCDataChannelInit conf = new RTCDataChannelInit();
