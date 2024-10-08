@@ -24,11 +24,11 @@ namespace WebRTCTutorial
         {
             _ws = new WebSocket(url);
             // Subscribe to events
-            _ws.OnOpen += OnOpen;
             _ws.OnMessage += OnMessage;
             _ws.OnError += OnError;
             // Connect
-            _ws.Connect();
+            _ws.Connect(); 
+
         }
         protected void Update()
         {
@@ -50,7 +50,6 @@ namespace WebRTCTutorial
                 return;
             }
             // Unsubscribe from events
-            _ws.OnOpen -= OnOpen;
             _ws.OnMessage -= OnMessage;
             _ws.OnError -= OnError;
             _ws.Close();
@@ -58,8 +57,6 @@ namespace WebRTCTutorial
         }
         private void OnMessage(object sender, MessageEventArgs e) => _receivedMessages.Enqueue(e.Data);
         private void OnError(object sender, ErrorEventArgs e) => _receivedErrors.Enqueue(e.Message);
-
-        private void OnOpen(object sender, EventArgs e) => SendWebSocketMessage("Test Message");
     }
 }
 

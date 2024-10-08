@@ -79,6 +79,7 @@ namespace WebRTCTutorial
         private void OnWebSocketMessageReceived(string message)
         {
             var dtoWrapper = JsonUtility.FromJson<DTOWrapper>(message);
+            Debug.Log(dtoWrapper.Payload);
             switch ((DtoType)dtoWrapper.Type)
             {
                 case DtoType.ICE:
