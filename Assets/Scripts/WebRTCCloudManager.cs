@@ -6,6 +6,7 @@ using Unity.WebRTC;
 using UnityEngine;
 using Draco;
 using WebSocketSharp;
+using Newtonsoft.Json;
 using WebRTCTutorial.DTO;
 
 namespace WebRTCTutorial
@@ -33,20 +34,21 @@ namespace WebRTCTutorial
         private void OnNegotiationNeeded()
         {
             Debug.Log("SDP Offer <-> Answer exchange requested by the webRTC client.");
+            StartCoroutine(CreateAndSendLocalSdpOffer());
         }
 
         private void SendMessageToOtherPeer<TType>(TType obj, DtoType type)
         {
             try
             {
-                var serializedPayload = JsonUtility.ToJson(obj);
+                var serializedPayload = JsonConvert.SerializeObject(obj); ;
 
                 var dtoWrapper = new DTOWrapper
                 {
                     Type = (int)type,
                     Payload = serializedPayload
                 };
-                var serializedDto = JsonUtility.ToJson(dtoWrapper);
+                var serializedDto = JsonConvert.SerializeObject(dtoWrapper); ;
                 _webSocketClient.SendWebSocketMessage(serializedDto);
             }
             catch (Exception e)
@@ -78,12 +80,13 @@ namespace WebRTCTutorial
 
         private void OnWebSocketMessageReceived(string message)
         {
-            var dtoWrapper = JsonUtility.FromJson<DTOWrapper>(message);
+            var dtoWrapper = JsonConvert.DeserializeObject<DTOWrapper>(message);
+            //var dtoWrapper = JObject.Parse(message);
             Debug.Log(dtoWrapper.Payload);
             switch ((DtoType)dtoWrapper.Type)
             {
                 case DtoType.ICE:
-                    var iceDto = JsonUtility.FromJson<DTOice>(dtoWrapper.Payload);
+                    var iceDto = JsonConvert.DeserializeObject<DTOice>(dtoWrapper.Payload);
 
                     var ice = new RTCIceCandidate(new RTCIceCandidateInit
                     {
@@ -96,7 +99,7 @@ namespace WebRTCTutorial
                     Debug.Log($"Received ICE Candidate: {ice.Candidate}");
                     break;
                 case DtoType.SDP:
-                    var sdpDto = JsonUtility.FromJson<DTOsdp>(dtoWrapper.Payload);
+                    var sdpDto = JsonConvert.DeserializeObject<DTOsdp>(dtoWrapper.Payload);
                     var sdp = new RTCSessionDescription
                     {
                         type = (RTCSdpType)sdpDto.Type,
@@ -109,6 +112,9 @@ namespace WebRTCTutorial
                             //StartCoroutine(OnRemoteSdpOfferReceived(sdp));
                             break;
                         case RTCSdpType.Answer:
+                            StartCoroutine(OnRemoteSdpAnswerReceived(sdp));
+                            break;
+                        case RTCSdpType.Pranswer:
                             StartCoroutine(OnRemoteSdpAnswerReceived(sdp));
                             break;
                         default:
@@ -132,6 +138,10 @@ namespace WebRTCTutorial
                 yield break;
             }
             var sdpOffer = createOfferOperation.Desc;
+            /*
+            string modifiedSdp = sdpOffer.sdp.Replace("127.0.0.1", "10.1.2.138");  // Replace localhost with LAN IP
+            sdpOffer.sdp = modifiedSdp;
+            */
 
             // 2. Set the offer as a local SDP 
             var setLocalSdpOperation = _peerConnection.SetLocalDescription(ref sdpOffer);
@@ -156,12 +166,37 @@ namespace WebRTCTutorial
             {
                 Debug.LogError("Failed to set remote description");
             }
+            dataChannel = _peerConnection.CreateDataChannel("fileTransfer", new RTCDataChannelInit());
+            onDataChannel = channel =>
+            {
+                Debug.Log("OnDataChannel");
+                remoteDataChannel = channel;
+                remoteDataChannel.OnMessage = onDataChannelMessage;
+            };
+            onDataChannelMessage = async bytes =>
+            {
+                Debug.Log("OnDataChannelMessage");
+                receivedFrame = bytes;
+                var meshDataArray = Mesh.AllocateWritableMeshData(1);
+                var result = await DracoDecoder.DecodeMesh(meshDataArray[0], receivedFrame);
+                Mesh.ApplyAndDisposeWritableMeshData(meshDataArray, currentMesh);
+                var verticesList = new List<Vector3>(currentMesh.vertices);
+                var colorsList = new List<Color32>(currentMesh.colors32);
+                await particlesScript.Set(verticesList, colorsList);
+            };
         }
 
         private void OnIceCandidate(RTCIceCandidate candidate)
         {
+            /*if (candidate.Candidate.Contains("127.0.0.1"))
+            {
+                Debug.Log("Ignoring localhost ICE candidate");
+                return;
+            }
+            */
+            Debug.Log("Found ICE candidate");
             SendIceCandidateToOtherPeer(candidate);
-            Debug.Log("Sent Ice Candidate to the other peer THREAD  " + Thread.CurrentThread.ManagedThreadId);
+            Debug.Log("Sent ICE Candidate to the other peer THREAD " + Thread.CurrentThread.ManagedThreadId);
         }
 
     protected void Awake()
@@ -179,10 +214,11 @@ namespace WebRTCTutorial
                         urls = new string[]
                         {
                         // Google Stun server
-                        "stun:stun.l.google.com:19302"                            
+                        "stun:stun.l.google.com:19302"
                         },
                     }
                 },
+                iceTransportPolicy = RTCIceTransportPolicy.All
             };
             _peerConnection = new RTCPeerConnection(ref config);
             // "Negotiation" is the exchange of SDP Offer/Answer. Peers describe what media they want to send and agree on, for example, what codecs to use
@@ -195,24 +231,6 @@ namespace WebRTCTutorial
             //_peerConnection. += OnTrack;
             // Triggered when a new message is received from the other peer via WebSocket
             _webSocketClient.MessageReceived += OnWebSocketMessageReceived;
-
-            onDataChannel = channel =>
-            {
-                Debug.Log("OnDataChannel");
-                remoteDataChannel = channel;
-                remoteDataChannel.OnMessage = onDataChannelMessage;
-            };
-            onDataChannelMessage = async bytes =>
-            {
-                Debug.Log("OnDataCHannelMessage");
-                receivedFrame = bytes;
-                var meshDataArray = Mesh.AllocateWritableMeshData(1);
-                var result = await DracoDecoder.DecodeMesh(meshDataArray[0], receivedFrame);
-                Mesh.ApplyAndDisposeWritableMeshData(meshDataArray, currentMesh);
-                var verticesList = new List<Vector3>(currentMesh.vertices);
-                var colorsList = new List<Color32>(currentMesh.colors32);
-                await particlesScript.Set(verticesList, colorsList);
-            };
         }
 
         public void Connect()
