@@ -39,7 +39,7 @@ namespace WebRTCTutorial
             }
             while (_receivedMessages.TryDequeue(out var message))
             {
-                Debug.Log("WS Message Received: " + message);
+                //Debug.Log("WS Message Received: " + message);
                 MessageReceived?.Invoke(message);
             }
         }

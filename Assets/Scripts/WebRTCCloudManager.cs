@@ -17,8 +17,8 @@ namespace WebRTCTutorial
         private RTCPeerConnection _peerConnection;
 
         private Mesh currentMesh;
-        private DracoToParticles particlesScript;
-        private byte[] receivedFrame;
+        public DracoToParticles particlesScript;
+        private List<byte[]> receivedFrame;
 
         public bool CanConnect =>
             _peerConnection?.ConnectionState == RTCPeerConnectionState.New || 
@@ -81,8 +81,6 @@ namespace WebRTCTutorial
         private void OnWebSocketMessageReceived(string message)
         {
             var dtoWrapper = JsonConvert.DeserializeObject<DTOWrapper>(message);
-            //var dtoWrapper = JObject.Parse(message);
-            Debug.Log(dtoWrapper.Payload);
             switch ((DtoType)dtoWrapper.Type)
             {
                 case DtoType.ICE:
@@ -138,10 +136,6 @@ namespace WebRTCTutorial
                 yield break;
             }
             var sdpOffer = createOfferOperation.Desc;
-            /*
-            string modifiedSdp = sdpOffer.sdp.Replace("127.0.0.1", "10.1.2.138");  // Replace localhost with LAN IP
-            sdpOffer.sdp = modifiedSdp;
-            */
 
             // 2. Set the offer as a local SDP 
             var setLocalSdpOperation = _peerConnection.SetLocalDescription(ref sdpOffer);
@@ -166,34 +160,10 @@ namespace WebRTCTutorial
             {
                 Debug.LogError("Failed to set remote description");
             }
-            dataChannel = _peerConnection.CreateDataChannel("fileTransfer", new RTCDataChannelInit());
-            onDataChannel = channel =>
-            {
-                Debug.Log("OnDataChannel");
-                remoteDataChannel = channel;
-                remoteDataChannel.OnMessage = onDataChannelMessage;
-            };
-            onDataChannelMessage = async bytes =>
-            {
-                Debug.Log("OnDataChannelMessage");
-                receivedFrame = bytes;
-                var meshDataArray = Mesh.AllocateWritableMeshData(1);
-                var result = await DracoDecoder.DecodeMesh(meshDataArray[0], receivedFrame);
-                Mesh.ApplyAndDisposeWritableMeshData(meshDataArray, currentMesh);
-                var verticesList = new List<Vector3>(currentMesh.vertices);
-                var colorsList = new List<Color32>(currentMesh.colors32);
-                await particlesScript.Set(verticesList, colorsList);
-            };
         }
 
         private void OnIceCandidate(RTCIceCandidate candidate)
         {
-            /*if (candidate.Candidate.Contains("127.0.0.1"))
-            {
-                Debug.Log("Ignoring localhost ICE candidate");
-                return;
-            }
-            */
             Debug.Log("Found ICE candidate");
             SendIceCandidateToOtherPeer(candidate);
             Debug.Log("Sent ICE Candidate to the other peer THREAD " + Thread.CurrentThread.ManagedThreadId);
@@ -201,6 +171,8 @@ namespace WebRTCTutorial
 
     protected void Awake()
         {
+            receivedFrame = new List<byte[]>();
+            currentMesh = new Mesh();
             // FindObjectOfType is used for the demo purpose only. In a real production it's better to avoid it for performance reasons
             _webSocketClient = FindObjectOfType<WebRTCDataTransfer>();
             StartCoroutine(WebRTC.Update());
@@ -227,15 +199,44 @@ namespace WebRTCTutorial
             _peerConnection.OnNegotiationNeeded += OnNegotiationNeeded;
             // Triggered when a new network endpoint is found that could potentially be used to establish the connection
             _peerConnection.OnIceCandidate += OnIceCandidate;
-            // Triggered when a new track is received
-            //_peerConnection. += OnTrack;
             // Triggered when a new message is received from the other peer via WebSocket
             _webSocketClient.MessageReceived += OnWebSocketMessageReceived;
         }
 
         public void Connect()
         {
-            StartCoroutine(CreateAndSendLocalSdpOffer());
+            dataChannel = _peerConnection.CreateDataChannel("LocalDataChannel", new RTCDataChannelInit());
+            Debug.Log("Created local data channel:" + dataChannel.Id);
+            _peerConnection.OnDataChannel = channel =>
+            {
+                Debug.Log("OnDataChannel:" + channel.Id);
+                remoteDataChannel = channel;
+                remoteDataChannel.OnMessage = onDataChannelMessage;
+            };
+            onDataChannelMessage = bytes =>
+            {
+                if (System.Text.Encoding.UTF8.GetString(bytes) == "EOF")
+                {
+                    Debug.Log("End of File received");
+                    DecodeMessage(Combine(receivedFrame));
+                    receivedFrame = new List<byte[]>();
+                }
+                else
+                {
+                    Debug.Log("Piece of PC received");
+                    receivedFrame.Add(bytes);
+                }
+            };
+        }
+
+        private async void DecodeMessage(byte[] fullFrame)
+        {
+            var meshDataArray = Mesh.AllocateWritableMeshData(1);
+            var result = await DracoDecoder.DecodeMesh(meshDataArray[0], fullFrame);
+            Mesh.ApplyAndDisposeWritableMeshData(meshDataArray, currentMesh);
+            var verticesList = new List<Vector3>(currentMesh.vertices);
+            var colorsList = new List<Color32>(currentMesh.colors32);
+            await particlesScript.Set(verticesList, colorsList);
         }
 
         public void Disconnect()
@@ -246,6 +247,28 @@ namespace WebRTCTutorial
             }
             _peerConnection.Close();
             _peerConnection.Dispose();
+        }
+
+        public void SendDebugMessage()
+        {
+            remoteDataChannel?.Send("Debug message on remote data channel");
+        }
+
+        private byte[] Combine(List<byte[]> arrays)
+        {
+            int size = 0;
+            foreach (byte[] array in arrays)
+            {
+                size += array.Length;
+            }
+            byte[] rv = new byte[size];
+            int offset = 0;
+            foreach (byte[] array in arrays)
+            {
+                System.Buffer.BlockCopy(array, 0, rv, offset, array.Length);
+                offset += array.Length;
+            }
+            return rv;
         }
     }
 }
