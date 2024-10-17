@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using Unity.WebRTC;
 using UnityEngine;
+using UnityEngine.UI;
 using Draco;
 using WebSocketSharp;
 using Newtonsoft.Json;
@@ -13,7 +14,8 @@ namespace WebRTCTutorial
 {
     public class WebRTCCloudManager : MonoBehaviour
     {
-        private WebRTCDataTransfer _webSocketClient;
+        public WebRTCDataTransfer webSocketClient;
+
         private RTCPeerConnection _peerConnection;
 
         private Mesh currentMesh;
@@ -30,6 +32,14 @@ namespace WebRTCTutorial
 
         private DelegateOnMessage onDataChannelMessage;
         private DelegateOnDataChannel onDataChannel;
+
+        [SerializeField]
+        private Button _connect;
+        [SerializeField]
+        private Button _message;
+        [SerializeField]
+        private Button _disconnect;
+
 
         private void OnNegotiationNeeded()
         {
@@ -49,7 +59,7 @@ namespace WebRTCTutorial
                     Payload = serializedPayload
                 };
                 var serializedDto = JsonConvert.SerializeObject(dtoWrapper); ;
-                _webSocketClient.SendWebSocketMessage(serializedDto);
+                webSocketClient.SendWebSocketMessage(serializedDto);
             }
             catch (Exception e)
             {
@@ -94,7 +104,6 @@ namespace WebRTCTutorial
                     });
 
                     _peerConnection.AddIceCandidate(ice);
-                    Debug.Log($"Received ICE Candidate: {ice.Candidate}");
                     break;
                 case DtoType.SDP:
                     var sdpDto = JsonConvert.DeserializeObject<DTOsdp>(dtoWrapper.Payload);
@@ -103,7 +112,6 @@ namespace WebRTCTutorial
                         type = (RTCSdpType)sdpDto.Type,
                         sdp = sdpDto.Sdp
                     };
-                    Debug.Log($"Received SDP offer of type: {sdp.type} and SDP details: {sdp.sdp}");
                     switch (sdp.type)
                     {
                         case RTCSdpType.Offer:
@@ -148,7 +156,6 @@ namespace WebRTCTutorial
             }
             // 3. Send the SDP Offer to the other Peer
             SendSdpToOtherPeer(sdpOffer);
-            Debug.Log("Sent Sdp Offer");
         }
 
         private IEnumerator OnRemoteSdpAnswerReceived(RTCSessionDescription remoteSdpAnswer)
@@ -164,17 +171,13 @@ namespace WebRTCTutorial
 
         private void OnIceCandidate(RTCIceCandidate candidate)
         {
-            Debug.Log("Found ICE candidate");
             SendIceCandidateToOtherPeer(candidate);
-            Debug.Log("Sent ICE Candidate to the other peer THREAD " + Thread.CurrentThread.ManagedThreadId);
         }
 
     protected void Awake()
         {
             receivedFrame = new List<byte[]>();
             currentMesh = new Mesh();
-            // FindObjectOfType is used for the demo purpose only. In a real production it's better to avoid it for performance reasons
-            _webSocketClient = FindObjectOfType<WebRTCDataTransfer>();
             StartCoroutine(WebRTC.Update());
 
             var config = new RTCConfiguration
@@ -200,18 +203,19 @@ namespace WebRTCTutorial
             // Triggered when a new network endpoint is found that could potentially be used to establish the connection
             _peerConnection.OnIceCandidate += OnIceCandidate;
             // Triggered when a new message is received from the other peer via WebSocket
-            _webSocketClient.MessageReceived += OnWebSocketMessageReceived;
+            webSocketClient.MessageReceived += OnWebSocketMessageReceived;
         }
 
         public void Connect()
         {
             dataChannel = _peerConnection.CreateDataChannel("LocalDataChannel", new RTCDataChannelInit());
-            Debug.Log("Created local data channel:" + dataChannel.Id);
             _peerConnection.OnDataChannel = channel =>
             {
-                Debug.Log("OnDataChannel:" + channel.Id);
                 remoteDataChannel = channel;
                 remoteDataChannel.OnMessage = onDataChannelMessage;
+                _connect.interactable = false;
+                _message.interactable = true;
+                _disconnect.interactable = true;
             };
             onDataChannelMessage = bytes =>
             {
@@ -247,11 +251,14 @@ namespace WebRTCTutorial
             }
             _peerConnection.Close();
             _peerConnection.Dispose();
+            _connect.interactable = true;
+            _message.interactable = false;
+            _disconnect.interactable = false;
         }
 
         public void SendDebugMessage()
         {
-            remoteDataChannel?.Send("Debug message on remote data channel");
+            remoteDataChannel?.Send("ACK");
         }
 
         private byte[] Combine(List<byte[]> arrays)

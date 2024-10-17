@@ -55,6 +55,12 @@ namespace WebRTCTutorial
             _ws.Close();
             _ws = null;
         }
+
+        public void ChangeURL(string newURL)
+        {
+            url = newURL;
+        }
+
         private void OnMessage(object sender, MessageEventArgs e) => _receivedMessages.Enqueue(e.Data);
         private void OnError(object sender, ErrorEventArgs e) => _receivedErrors.Enqueue(e.Message);
     }
