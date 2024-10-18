@@ -39,6 +39,9 @@ namespace WebRTCTutorial
         private Button _message;
         [SerializeField]
         private Button _disconnect;
+        [SerializeField]
+        private AnimationFPSCounter _animFramerate;
+        private float _deltaTime;
 
 
         private void OnNegotiationNeeded()
@@ -206,6 +209,11 @@ namespace WebRTCTutorial
             webSocketClient.MessageReceived += OnWebSocketMessageReceived;
         }
 
+        protected void OnDestroy()
+        {
+            Disconnect();
+        }
+
         public void Connect()
         {
             dataChannel = _peerConnection.CreateDataChannel("LocalDataChannel", new RTCDataChannelInit());
@@ -216,18 +224,22 @@ namespace WebRTCTutorial
                 _connect.interactable = false;
                 _message.interactable = true;
                 _disconnect.interactable = true;
+                _deltaTime = Time.time;
             };
             onDataChannelMessage = bytes =>
             {
                 if (System.Text.Encoding.UTF8.GetString(bytes) == "EOF")
                 {
-                    Debug.Log("End of File received");
+                    //Debug.Log("End of File received");
+
+                    _animFramerate.Iterate(Time.time - _deltaTime);
+                    _deltaTime = Time.time;
                     DecodeMessage(Combine(receivedFrame));
-                    receivedFrame = new List<byte[]>();
+                    receivedFrame.Clear();
                 }
                 else
                 {
-                    Debug.Log("Piece of PC received");
+                    //Debug.Log("Piece of PC received");
                     receivedFrame.Add(bytes);
                 }
             };
@@ -245,12 +257,9 @@ namespace WebRTCTutorial
 
         public void Disconnect()
         {
-            if (!IsConnected)
-            {
-                return;
-            }
-            _peerConnection.Close();
-            _peerConnection.Dispose();
+            remoteDataChannel.Close();
+            _peerConnection?.Close();
+            _peerConnection?.Dispose();
             _connect.interactable = true;
             _message.interactable = false;
             _disconnect.interactable = false;
