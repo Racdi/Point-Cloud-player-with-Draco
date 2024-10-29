@@ -8,10 +8,10 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Scenes/PointCloudPlayer.unity
     guid: 1edce59e579b92941a6fc6a3f74aa5e1
-  - enabled: 0
+  - enabled: 1
     path: Assets/Scenes/Draco-WebRequest.unity
     guid: 358129a54d12f90478bbe648d9529779
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/Draco-RTC.unity
     guid: d22b52d60085fbc4a85a78784df82bb9
   m_configObjects:

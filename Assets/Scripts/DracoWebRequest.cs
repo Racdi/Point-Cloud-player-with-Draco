@@ -25,17 +25,12 @@ public class DracoWebRequest : MonoBehaviour
     /// Path to a remote http server directory (i.e. http://localhost:8000/Recording_1/ , served by 'python -m http.server')
     /// </summary>
     public string RemoteHostPath;
-
-    /// <summary>
-    /// Path to a local directory (i.e. C:/../Recording_1/)
-    /// </summary>
-    public string LocalPath;
-
-    /// <summary>
-    /// Path to a streaming asset directory (i.e. Recording_1) <br/>
-    /// <b>NOTE:</b> It works in conjunction with AssetIndexerBuildProcessor.cs for accessing files in standalone (non-editor) builds.
-    /// </summary>
-    public string StreamingAssetsPath;
+    public string ipHostPath;
+    private string _http = "http://";
+    private string _port0 = ":8080";
+    private string _port1 = ":8081";
+    private string _files = "/dracoSimple/";
+    private bool _port = false;
 
     public int FPS = 30;
     public bool isLoop = true;
@@ -63,21 +58,9 @@ public class DracoWebRequest : MonoBehaviour
 
     private void UpdateDracoFiles()
     {
-        if (ReadMode == DataReadModes.Local)
-            dracoFiles = Directory.GetFiles(LocalPath, "*.drc");
-        else if (ReadMode == DataReadModes.StreamingAssets)
-        {
-#if UNITY_EDITOR
-                dracoFiles = Directory.GetFiles(Path.Combine(Application.streamingAssetsPath, StreamingAssetsPath), "*.drc");
-#else
-            List<string> dracoFilesList = ReadAssetIndexer();
-            dracoFiles = dracoFilesList.ToArray();
-#endif
-        }
-        else if (ReadMode == DataReadModes.Remote)
-            StartCoroutine(GetFilesFromHTTP(RemoteHostPath, (val) => { dracoFiles = val; }));
+        StartCoroutine(GetFilesFromHTTP(RemoteHostPath, (val) => { dracoFiles = val; }));
     }
-
+    /*
     private List<string> ReadAssetIndexer()
     {
         List<string> plyFilesList = new List<string>();
@@ -93,7 +76,7 @@ public class DracoWebRequest : MonoBehaviour
 
         return plyFilesList;
     }
-
+    */
     private IEnumerator GetFilesFromHTTP(string url, Action<string[]> callback)
     {
         List<string> paths = new List<string>();
@@ -212,6 +195,28 @@ public class DracoWebRequest : MonoBehaviour
     public void SetNewAddress(string newAddress)
     {
         RemoteHostPath = newAddress;
+    }
+
+    public void SetNewIP(string newIP)
+    {
+        ipHostPath = newIP;
+        RemoteHostPath = _http + ipHostPath + _port0 + _files;
+    }
+
+    public void ChangePort()
+    {
+        if(_port == true)
+        {
+            RemoteHostPath = _http + ipHostPath + _port0 + _files;
+            _port = false;
+            Reconnect();
+        }
+        else
+        {
+            RemoteHostPath = _http + ipHostPath + _port1 + _files;
+            _port = true;
+            Reconnect();
+        }
     }
 
     public void Reconnect()
