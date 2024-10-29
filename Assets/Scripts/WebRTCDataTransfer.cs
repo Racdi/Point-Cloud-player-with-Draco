@@ -20,7 +20,7 @@ namespace WebRTCTutorial
         public event MessageHandler MessageReceived;
 
         public void SendWebSocketMessage(string message) => _ws.Send(message);
-        protected void Awake()
+        public void Connect()
         {
             _ws = new WebSocket(url);
             // Subscribe to events
@@ -39,7 +39,7 @@ namespace WebRTCTutorial
             }
             while (_receivedMessages.TryDequeue(out var message))
             {
-                //Debug.Log("WS Message Received: " + message);
+                Debug.Log("WS Message Received: " + message);
                 MessageReceived?.Invoke(message);
             }
         }

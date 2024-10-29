@@ -58,7 +58,7 @@ public class DracoWebRequest : MonoBehaviour
         currentMesh = new Mesh();
         particlesScript = gameObject.GetComponent<DracoToParticles>();
         PlayIndex = 0;
-        UpdateDracoFiles();
+        //UpdateDracoFiles();
     }
 
     private void UpdateDracoFiles()
