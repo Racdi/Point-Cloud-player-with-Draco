@@ -144,7 +144,7 @@ public class DracoWebRequest : MonoBehaviour
         {
             if (lastPlayedIndex > index && index != 0)
             {
-                //print("Obsolete data received");
+                print("Obsolete data received");
                 OnObsoleteDataReceived.Invoke();
                 dropFrames = true;
             }
@@ -156,6 +156,7 @@ public class DracoWebRequest : MonoBehaviour
 
                 await particlesScript.Set(verticesList, colorsList);
                 lastPlayedIndex = index;
+                //currentMesh.Clear();
             }
         }
     }
@@ -252,6 +253,7 @@ public class DracoWebRequest : MonoBehaviour
             PlayIndex++;
             if (PlayIndex >= dracoFiles.Length) //dracoFiles.Length
             {
+                System.GC.Collect();
                 playIndex = 0;
                 if (isLoop == false)
                 {

@@ -16,6 +16,8 @@ public class DracoToParticles : MonoBehaviour {
     public float particleScale = 1;
     public float particleSize = 5;
 
+    private Texture2D _positionMap;
+    private Texture2D _colorMap;
 
     // Use this for initialization
 
@@ -34,16 +36,21 @@ public class DracoToParticles : MonoBehaviour {
 
     public async Task Set(List<Vector3> vertices, List<Color32> colors)
     {
+        if(_positionMap != null)
+        {
+            Destroy(_positionMap);
+            Destroy(_colorMap);
+        }
         //Taken from PCX importer
         var _pointCount = vertices.Count;
 
         var width = Mathf.CeilToInt(Mathf.Sqrt(_pointCount));
 
-        Texture2D _positionMap = new Texture2D(width, width, TextureFormat.RGBAHalf, false);
+        _positionMap = new Texture2D(width, width, TextureFormat.RGBAHalf, false);
         _positionMap.name = "Position Map";
         _positionMap.filterMode = FilterMode.Point;
 
-        Texture2D _colorMap = new Texture2D(width, width, TextureFormat.RGBA32, false);
+        _colorMap = new Texture2D(width, width, TextureFormat.RGBA32, false);
         _colorMap.name = "Color Map";
         _colorMap.filterMode = FilterMode.Point;
 
