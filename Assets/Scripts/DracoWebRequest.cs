@@ -249,11 +249,11 @@ public class DracoWebRequest : MonoBehaviour
         if (dracoFiles.Length > 0 && t >= 1f / FPS)
         {
             counter.Iterate(t);
-            t = 0;//-= 1/FPS;
+            t -= (1f/FPS);
             PlayIndex++;
             if (PlayIndex >= dracoFiles.Length) //dracoFiles.Length
             {
-                System.GC.Collect();
+                //System.GC.Collect();
                 playIndex = 0;
                 if (isLoop == false)
                 {
