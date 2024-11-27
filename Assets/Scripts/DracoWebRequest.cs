@@ -33,6 +33,7 @@ public class DracoWebRequest : MonoBehaviour
     private bool _port = false;
 
     public int FPS = 30;
+    public int bufferSize = 30;
     public bool isLoop = true;
 
     private float t;
@@ -44,6 +45,12 @@ public class DracoWebRequest : MonoBehaviour
 
     private Mesh currentMesh;
 
+    private Mesh[] buffer; //Stores the files as they are received
+    private Mesh[] playBuffer; //Used by Play so no files are overwritten during play
+    private bool bufferLoaded;
+    private bool playBufferReady;
+    private int requestsCounter = 0;
+
     public int PlayIndex { get => playIndex; set => playIndex = value; }
 
     private DracoToParticles particlesScript;
@@ -51,6 +58,15 @@ public class DracoWebRequest : MonoBehaviour
     private void OnEnable()
     {
         currentMesh = new Mesh();
+        buffer = new Mesh[bufferSize];
+        playBuffer = new Mesh[bufferSize];
+        for (int i = 0; i < bufferSize; i++)
+        {
+            buffer[i] = new Mesh();
+            playBuffer[i] = new Mesh();
+        }
+        bufferLoaded = false;
+        playBufferReady = true;
         particlesScript = gameObject.GetComponent<DracoToParticles>();
         PlayIndex = 0;
         //UpdateDracoFiles();
@@ -60,23 +76,7 @@ public class DracoWebRequest : MonoBehaviour
     {
         StartCoroutine(GetFilesFromHTTP(RemoteHostPath, (val) => { dracoFiles = val; }));
     }
-    /*
-    private List<string> ReadAssetIndexer()
-    {
-        List<string> plyFilesList = new List<string>();
-        TextAsset paths = Resources.Load<TextAsset>(Path.Combine(AssetIndexerConfig.BaseDirectory, StreamingAssetsPath, "paths"));
-        string fs = paths.text;
-        string[] fLines = Regex.Split(fs, "\n|\r|\r\n");
 
-        foreach (string line in fLines)
-        {
-            if (line.Length > 0)
-                plyFilesList.Add(line);
-        }
-
-        return plyFilesList;
-    }
-    */
     private IEnumerator GetFilesFromHTTP(string url, Action<string[]> callback)
     {
         List<string> paths = new List<string>();
@@ -99,7 +99,8 @@ public class DracoWebRequest : MonoBehaviour
                             string value = match.Groups["name"].Value;
                             string path = Path.Combine(url, value);
                             paths.Add(path);
-                            //print(path);
+                            //Debug.Log(path);
+                            
                         }
                     }
                 }
@@ -120,23 +121,13 @@ public class DracoWebRequest : MonoBehaviour
     {
         return "<a href=\"(?<name>.+drc)\">.+drc</a>";
     }
-
+    /*
     private async Task Play(int index)
     {
         string filepath = dracoFiles[PlayIndex];
         if (ReadMode == DataReadModes.Remote)
         {
-            StartCoroutine(getRequest(filepath, OnRequestComplete));
-        }
-        else
-        {
-            using (var loadedmesh = File.Open(filepath, FileMode.Open))
-            {
-                var memoryString = new MemoryStream();
-                loadedmesh.CopyTo(memoryString);
-                currentMesh = await DracoDecoder.DecodeMesh(memoryString.ToArray());
-                memoryString.Dispose();
-            }
+            StartCoroutine(getRequest(filepath, OnRequestComplete, index));
         }
 
         bool dropFrames = false;
@@ -160,8 +151,22 @@ public class DracoWebRequest : MonoBehaviour
             }
         }
     }
+    */
+    async Task PlayBuffer()
+    {
+        for (int i = 0; i < bufferSize; i++)
+        {
+            var verticesList = new List<Vector3>(playBuffer[i].vertices);
+            var colorsList = new List<Color32>(playBuffer[i].colors32);
 
-    IEnumerator getRequest(string uri, System.Action<byte[]> callbackOnFinish)
+            await particlesScript.Set(verticesList, colorsList);
+            await Task.Delay(1000 / FPS);
+            //Debug.Log("Playing on " + i);
+        }
+        playBufferReady = true;
+    }
+
+    IEnumerator getRequest(string uri, System.Action<byte[], int> callbackOnFinish, int bufferIndex)
     {
         UnityWebRequest uwr = UnityWebRequest.Get(uri);
         uwr.downloadHandler = new DownloadHandlerBuffer();
@@ -178,19 +183,20 @@ public class DracoWebRequest : MonoBehaviour
         else
         {
             byte[] results = uwr.downloadHandler.data;
-            callbackOnFinish(results);
+            callbackOnFinish(results, bufferIndex);
         }
         uwr.Dispose();
     }
 
-    async void OnRequestComplete(byte[] stream)
+    async void OnRequestComplete(byte[] stream, int bufferIndex)
     {
         // Async decoding has to start on the main thread and spawns multiple C# jobs.
         //currentMesh = new Mesh();
         var meshDataArray = Mesh.AllocateWritableMeshData(1);
         var result = await DracoDecoder.DecodeMesh(meshDataArray[0], stream);
         //currentMesh = await DracoDecoder.DecodeMesh(stream);
-        Mesh.ApplyAndDisposeWritableMeshData(meshDataArray, currentMesh);
+        Mesh.ApplyAndDisposeWritableMeshData(meshDataArray, buffer[bufferIndex]);
+        requestsCounter = requestsCounter + 1;
     }
 
     public void SetNewAddress(string newAddress)
@@ -241,27 +247,33 @@ public class DracoWebRequest : MonoBehaviour
         {
             return;
         }
-
-        //FPS = Mathf.Max(1, FPS);
-
-        t += Time.deltaTime;
-
-        if (dracoFiles.Length > 0 && t >= 1f / FPS)
+        else
         {
-            counter.Iterate(t);
-            t -= (1f/FPS);
-            PlayIndex++;
-            if (PlayIndex >= dracoFiles.Length) //dracoFiles.Length
+            if (bufferLoaded == false)
             {
-                //System.GC.Collect();
-                playIndex = 0;
-                if (isLoop == false)
+                bufferLoaded = true;
+                if (PlayIndex >= dracoFiles.Length)
                 {
-                    return;
+                    PlayIndex = 0;
                 }
+                
+                for (int i = 0; i < bufferSize; i++)
+                {
+                    string filepath = dracoFiles[i + PlayIndex];
+                    StartCoroutine(getRequest(filepath, OnRequestComplete, i));
+                }              
+                PlayIndex = PlayIndex + bufferSize;
             }
 
-            Play(PlayIndex);
+            if (requestsCounter >= bufferSize && playBufferReady)
+            {
+                Debug.Log("Calling play (play index is:" +PlayIndex +")");
+                playBufferReady = false;
+                Array.Copy(buffer, playBuffer, bufferSize);
+                requestsCounter = 0;
+                bufferLoaded = false;
+                PlayBuffer();
+            }
         }
     }
 }
