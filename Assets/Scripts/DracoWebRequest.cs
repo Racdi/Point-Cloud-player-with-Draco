@@ -118,46 +118,19 @@ public class DracoWebRequest : MonoBehaviour
     {
         return "<a href=\"(?<name>.+drc)\">.+drc</a>";
     }
-    /*
-    private async Task Play(int index)
-    {
-        string filepath = dracoFiles[PlayIndex];
-        if (ReadMode == DataReadModes.Remote)
-        {
-            StartCoroutine(getRequest(filepath, OnRequestComplete, index));
-        }
 
-        bool dropFrames = false;
-        if (currentMesh != null)
-        {
-            if (lastPlayedIndex > index && index != 0)
-            {
-                print("Obsolete data received");
-                OnObsoleteDataReceived.Invoke();
-                dropFrames = true;
-            }
-
-            if (!dropFrames)
-            {
-                var verticesList = new List<Vector3>(currentMesh.vertices);
-                var colorsList = new List<Color32>(currentMesh.colors32);
-
-                await particlesScript.Set(verticesList, colorsList);
-                lastPlayedIndex = index;
-                //currentMesh.Clear();
-            }
-        }
-    }
-    */
     async Task PlayBuffer(Mesh[] deepCopy)
     {
         for (int i = 0; i < bufferSize; i++)
         {
+            float startTime = Time.realtimeSinceStartup;
             var verticesList = new List<Vector3>(deepCopy[i].vertices);
             var colorsList = new List<Color32>(deepCopy[i].colors32);
 
-            await particlesScript.Set(verticesList, colorsList);
+            particlesScript.Set(verticesList, colorsList);
             await Task.Delay(1000 / FPS);
+
+            counter.Iterate(Time.realtimeSinceStartup - startTime);
         }
         playBufferReady = true;
     }
