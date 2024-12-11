@@ -32,7 +32,7 @@ public class DracoWebRequest : MonoBehaviour
     private string _files = "/dracoSimple/";
     private bool _port = false;
 
-    public int FPS = 30;
+    public float FPS = 30;
     public int bufferSize = 30;
     public bool isLoop = true;
 
@@ -128,9 +128,16 @@ public class DracoWebRequest : MonoBehaviour
             var colorsList = new List<Color32>(deepCopy[i].colors32);
 
             particlesScript.Set(verticesList, colorsList);
-            await Task.Delay(1000 / FPS);
-
-            counter.Iterate(Time.realtimeSinceStartup - startTime);
+            float remainderS = Time.realtimeSinceStartup - startTime;
+            float remainderMS = remainderS * 1000;
+            float desired = 1000 / FPS;
+            if (remainderMS < desired)
+            {
+                //Debug.Log("Must wait " + (desired - remainderMS));
+                await Task.Delay((int)(desired - remainderMS));
+            }
+            
+            counter.Tick();
         }
         playBufferReady = true;
     }
