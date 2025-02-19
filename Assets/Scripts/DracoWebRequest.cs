@@ -12,6 +12,7 @@ using UnityEngine.Events;
 using PCP;
 using PCP.Utils;
 using Draco;
+using Unity.VisualScripting;
 
 public class DracoWebRequest : MonoBehaviour
 {
@@ -131,22 +132,28 @@ public class DracoWebRequest : MonoBehaviour
     {
         for (int i = 0; i < bufferSize; i++)
         {
-            Debug.Log("Showing frame number " + i);
+            //Debug.Log("Showing frame number " + i);
             float startTime = Time.realtimeSinceStartup;
             var verticesList = new List<Vector3>(deepCopy[i].vertices);
             var colorsList = new List<Color32>(deepCopy[i].colors32);
 
             particlesScript.Set(verticesList, colorsList);
-            float remainderS = Time.realtimeSinceStartup - startTime;
-            float remainderMS = remainderS * 1000;
+
+            float elapsedS = Time.realtimeSinceStartup - startTime;
+            float elapsedMS = elapsedS * 1000;
             float desired = 1000 / FPS;
-            if (remainderMS < desired)
+            //Debug.Log(elapsedMS);
+            if (elapsedMS < desired)
             {
-                //Debug.Log("Must wait " + (desired - remainderMS));
-                await Task.Delay((int)(desired - remainderMS));
+                //Debug.Log("Must wait " + (desired - elapsedMS));
+                await Task.Delay((int)(desired - elapsedMS));
             }
+            else
+            {
+                await Task.Delay(1);
+            }
+                counter.Tick();
             
-            counter.Tick();
         }
         playBufferReady = true;
     }
@@ -155,6 +162,7 @@ public class DracoWebRequest : MonoBehaviour
     {
         
         UnityWebRequest uwr = UnityWebRequest.Get(uri);
+        uwr.certificateHandler = new BypassCertificateHandler();
         uwr.downloadHandler = new DownloadHandlerBuffer();
         yield return uwr.SendWebRequest();
 
