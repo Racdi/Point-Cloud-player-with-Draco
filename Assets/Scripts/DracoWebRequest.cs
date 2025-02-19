@@ -73,11 +73,19 @@ public class DracoWebRequest : MonoBehaviour
     {
         StartCoroutine(GetFilesFromHTTP(RemoteHostPath, (val) => { dracoFiles = val; }));
     }
+    public class BypassCertificateHandler : CertificateHandler
+    {
+        protected override bool ValidateCertificate(byte[] certificateData)
+        {
+            return true; // Accept all certificates
+        }
+    }
 
     private IEnumerator GetFilesFromHTTP(string url, Action<string[]> callback)
     {
         List<string> paths = new List<string>();
         UnityWebRequest webRequest = UnityWebRequest.Get(url);
+        webRequest.certificateHandler = new BypassCertificateHandler();
         yield return webRequest.SendWebRequest();
 
         if (webRequest.result == UnityWebRequest.Result.Success)
@@ -123,6 +131,7 @@ public class DracoWebRequest : MonoBehaviour
     {
         for (int i = 0; i < bufferSize; i++)
         {
+            Debug.Log("Showing frame number " + i);
             float startTime = Time.realtimeSinceStartup;
             var verticesList = new List<Vector3>(deepCopy[i].vertices);
             var colorsList = new List<Color32>(deepCopy[i].colors32);
