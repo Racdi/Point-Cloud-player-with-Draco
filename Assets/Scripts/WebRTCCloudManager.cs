@@ -249,9 +249,9 @@ namespace WebRTCTutorial
             var meshDataArray = Mesh.AllocateWritableMeshData(1);
             var result = await DracoDecoder.DecodeMesh(meshDataArray[0], fullFrame);
             Mesh.ApplyAndDisposeWritableMeshData(meshDataArray, currentMesh);
-            var verticesList = new List<Vector3>(currentMesh.vertices);
-            var colorsList = new List<Color32>(currentMesh.colors32);
-            await particlesScript.Set(verticesList, colorsList);
+            //var verticesList = new List<Vector3>(currentMesh.vertices);
+            //var colorsList = new List<Color32>(currentMesh.colors32);
+            await particlesScript.Set(currentMesh);
         }
 
         public void Disconnect()

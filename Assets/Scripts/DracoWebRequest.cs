@@ -46,7 +46,8 @@ public class DracoWebRequest : MonoBehaviour
 
     private Mesh currentMesh;
 
-    private Mesh[] buffer; //Stores the files as they are received, another array is used to play them
+    private Mesh[] buffer0, buffer1; //Stores the files as they are received, another array is used to play them
+    private bool isCurrentBuffer1 = false;
     private bool bufferLoaded;
     private bool playBufferReady;
     private int requestsCounter = 0;
@@ -58,10 +59,15 @@ public class DracoWebRequest : MonoBehaviour
     private void OnEnable()
     {
         currentMesh = new Mesh();
-        buffer = new Mesh[bufferSize];
+        buffer0 = new Mesh[bufferSize];
         for (int i = 0; i < bufferSize; i++)
         {
-            buffer[i] = new Mesh();
+            buffer0[i] = new Mesh();
+        }
+        buffer1 = new Mesh[bufferSize];
+        for (int i = 0; i < bufferSize; i++)
+        {
+            buffer1[i] = new Mesh();
         }
         bufferLoaded = false;
         playBufferReady = true;
@@ -134,10 +140,10 @@ public class DracoWebRequest : MonoBehaviour
         {
             //Debug.Log("Showing frame number " + i);
             float startTime = Time.realtimeSinceStartup;
-            var verticesList = new List<Vector3>(deepCopy[i].vertices);
-            var colorsList = new List<Color32>(deepCopy[i].colors32);
+            //var verticesList = new List<Vector3>(deepCopy[i].vertices);
+            //var colorsList = new List<Color32>(deepCopy[i].colors32);
 
-            particlesScript.Set(verticesList, colorsList);
+            await particlesScript.Set(deepCopy[i]);
 
             float elapsedS = Time.realtimeSinceStartup - startTime;
             float elapsedMS = elapsedS * 1000;
@@ -156,6 +162,7 @@ public class DracoWebRequest : MonoBehaviour
             
         }
         playBufferReady = true;
+        Debug.Log("Finished playing buffer");
     }
 
     IEnumerator getRequest(string uri, System.Action<byte[], int> callbackOnFinish, int bufferIndex)
@@ -188,8 +195,14 @@ public class DracoWebRequest : MonoBehaviour
         // Async decoding has to start on the main thread and spawns multiple C# jobs.
         var meshDataArray = Mesh.AllocateWritableMeshData(1);
         var result = await DracoDecoder.DecodeMesh(meshDataArray[0], stream);
-        Mesh.ApplyAndDisposeWritableMeshData(meshDataArray, buffer[bufferIndex]);
-        requestsCounter = requestsCounter + 1;
+        if (isCurrentBuffer1 == false) {
+            Mesh.ApplyAndDisposeWritableMeshData(meshDataArray, buffer0[bufferIndex]);
+        }
+        else
+        {
+            Mesh.ApplyAndDisposeWritableMeshData(meshDataArray, buffer1[bufferIndex]);
+        }
+            requestsCounter = requestsCounter + 1;
     }
 
     public void SetNewAddress(string newAddress)
@@ -244,6 +257,7 @@ public class DracoWebRequest : MonoBehaviour
         {
             if (bufferLoaded == false)
             {
+                Debug.Log("Begin downloading buffer");
 
                 bufferLoaded = true;
                 if (PlayIndex >= dracoFiles.Length)
@@ -261,7 +275,10 @@ public class DracoWebRequest : MonoBehaviour
 
             if (requestsCounter >= bufferSize && playBufferReady)
             {
+                Debug.Log("Start playing buffer");
                 playBufferReady = false;
+
+                /*
                 //Array.Copy(buffer, playBuffer, bufferSize);
                 Mesh[] deepCopy = new Mesh[bufferSize];
                 for (int i = 0; i < bufferSize; i++)
@@ -270,9 +287,20 @@ public class DracoWebRequest : MonoBehaviour
                     deepCopy[i].vertices = buffer[i].vertices;
                     deepCopy[i].colors32 = buffer[i].colors32;
                 }
+                */
+                if(isCurrentBuffer1 == false)
+                {
+                    PlayBuffer(buffer0);
+                    isCurrentBuffer1 = true;
+                }
+                else
+                {
+                    PlayBuffer(buffer1);
+                    isCurrentBuffer1 = false;
+                }
                 requestsCounter = 0;
                 bufferLoaded = false;
-                PlayBuffer(deepCopy);
+                //PlayBuffer(deepCopy);
             }
         }
     }
