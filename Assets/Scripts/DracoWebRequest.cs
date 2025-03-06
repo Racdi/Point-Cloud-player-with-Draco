@@ -12,6 +12,7 @@ using UnityEngine.Events;
 using PCP;
 using PCP.Utils;
 using Draco;
+using Unity.VisualScripting;
 
 public class DracoWebRequest : MonoBehaviour
 {
@@ -32,7 +33,8 @@ public class DracoWebRequest : MonoBehaviour
     private string _files = "/dracoSimple/";
     private bool _port = false;
 
-    public int FPS = 30;
+    public float FPS = 30;
+    public int bufferSize = 30;
     public bool isLoop = true;
 
     private float t;
@@ -44,6 +46,11 @@ public class DracoWebRequest : MonoBehaviour
 
     private Mesh currentMesh;
 
+    private Mesh[] buffer; //Stores the files as they are received, another array is used to play them
+    private bool bufferLoaded;
+    private bool playBufferReady;
+    private int requestsCounter = 0;
+
     public int PlayIndex { get => playIndex; set => playIndex = value; }
 
     private DracoToParticles particlesScript;
@@ -51,6 +58,13 @@ public class DracoWebRequest : MonoBehaviour
     private void OnEnable()
     {
         currentMesh = new Mesh();
+        buffer = new Mesh[bufferSize];
+        for (int i = 0; i < bufferSize; i++)
+        {
+            buffer[i] = new Mesh();
+        }
+        bufferLoaded = false;
+        playBufferReady = true;
         particlesScript = gameObject.GetComponent<DracoToParticles>();
         PlayIndex = 0;
         //UpdateDracoFiles();
@@ -60,27 +74,19 @@ public class DracoWebRequest : MonoBehaviour
     {
         StartCoroutine(GetFilesFromHTTP(RemoteHostPath, (val) => { dracoFiles = val; }));
     }
-    /*
-    private List<string> ReadAssetIndexer()
+    public class BypassCertificateHandler : CertificateHandler
     {
-        List<string> plyFilesList = new List<string>();
-        TextAsset paths = Resources.Load<TextAsset>(Path.Combine(AssetIndexerConfig.BaseDirectory, StreamingAssetsPath, "paths"));
-        string fs = paths.text;
-        string[] fLines = Regex.Split(fs, "\n|\r|\r\n");
-
-        foreach (string line in fLines)
+        protected override bool ValidateCertificate(byte[] certificateData)
         {
-            if (line.Length > 0)
-                plyFilesList.Add(line);
+            return true; // Accept all certificates
         }
-
-        return plyFilesList;
     }
-    */
+
     private IEnumerator GetFilesFromHTTP(string url, Action<string[]> callback)
     {
         List<string> paths = new List<string>();
         UnityWebRequest webRequest = UnityWebRequest.Get(url);
+        webRequest.certificateHandler = new BypassCertificateHandler();
         yield return webRequest.SendWebRequest();
 
         if (webRequest.result == UnityWebRequest.Result.Success)
@@ -99,7 +105,8 @@ public class DracoWebRequest : MonoBehaviour
                             string value = match.Groups["name"].Value;
                             string path = Path.Combine(url, value);
                             paths.Add(path);
-                            //print(path);
+                            //Debug.Log(path);
+                            
                         }
                     }
                 }
@@ -121,49 +128,41 @@ public class DracoWebRequest : MonoBehaviour
         return "<a href=\"(?<name>.+drc)\">.+drc</a>";
     }
 
-    private async Task Play(int index)
+    async Task PlayBuffer(Mesh[] deepCopy)
     {
-        string filepath = dracoFiles[PlayIndex];
-        if (ReadMode == DataReadModes.Remote)
+        for (int i = 0; i < bufferSize; i++)
         {
-            StartCoroutine(getRequest(filepath, OnRequestComplete));
-        }
-        else
-        {
-            using (var loadedmesh = File.Open(filepath, FileMode.Open))
-            {
-                var memoryString = new MemoryStream();
-                loadedmesh.CopyTo(memoryString);
-                currentMesh = await DracoDecoder.DecodeMesh(memoryString.ToArray());
-                memoryString.Dispose();
-            }
-        }
+            //Debug.Log("Showing frame number " + i);
+            float startTime = Time.realtimeSinceStartup;
+            var verticesList = new List<Vector3>(deepCopy[i].vertices);
+            var colorsList = new List<Color32>(deepCopy[i].colors32);
 
-        bool dropFrames = false;
-        if (currentMesh != null)
-        {
-            if (lastPlayedIndex > index && index != 0)
-            {
-                print("Obsolete data received");
-                OnObsoleteDataReceived.Invoke();
-                dropFrames = true;
-            }
+            particlesScript.Set(verticesList, colorsList);
 
-            if (!dropFrames)
+            float elapsedS = Time.realtimeSinceStartup - startTime;
+            float elapsedMS = elapsedS * 1000;
+            float desired = 1000 / FPS;
+            //Debug.Log(elapsedMS);
+            if (elapsedMS < desired)
             {
-                var verticesList = new List<Vector3>(currentMesh.vertices);
-                var colorsList = new List<Color32>(currentMesh.colors32);
-
-                await particlesScript.Set(verticesList, colorsList);
-                lastPlayedIndex = index;
-                //currentMesh.Clear();
+                //Debug.Log("Must wait " + (desired - elapsedMS));
+                await Task.Delay((int)(desired - elapsedMS));
             }
+            else
+            {
+                await Task.Delay(1);
+            }
+                counter.Tick();
+            
         }
+        playBufferReady = true;
     }
 
-    IEnumerator getRequest(string uri, System.Action<byte[]> callbackOnFinish)
+    IEnumerator getRequest(string uri, System.Action<byte[], int> callbackOnFinish, int bufferIndex)
     {
+        
         UnityWebRequest uwr = UnityWebRequest.Get(uri);
+        uwr.certificateHandler = new BypassCertificateHandler();
         uwr.downloadHandler = new DownloadHandlerBuffer();
         yield return uwr.SendWebRequest();
 
@@ -177,20 +176,20 @@ public class DracoWebRequest : MonoBehaviour
         }
         else
         {
+            //Debug.Log("Loading frame number:" + bufferIndex + " URI is: " + uri);
             byte[] results = uwr.downloadHandler.data;
-            callbackOnFinish(results);
+            callbackOnFinish(results, bufferIndex);
         }
         uwr.Dispose();
     }
 
-    async void OnRequestComplete(byte[] stream)
+    async void OnRequestComplete(byte[] stream, int bufferIndex)
     {
         // Async decoding has to start on the main thread and spawns multiple C# jobs.
-        //currentMesh = new Mesh();
         var meshDataArray = Mesh.AllocateWritableMeshData(1);
         var result = await DracoDecoder.DecodeMesh(meshDataArray[0], stream);
-        //currentMesh = await DracoDecoder.DecodeMesh(stream);
-        Mesh.ApplyAndDisposeWritableMeshData(meshDataArray, currentMesh);
+        Mesh.ApplyAndDisposeWritableMeshData(meshDataArray, buffer[bufferIndex]);
+        requestsCounter = requestsCounter + 1;
     }
 
     public void SetNewAddress(string newAddress)
@@ -241,27 +240,40 @@ public class DracoWebRequest : MonoBehaviour
         {
             return;
         }
-
-        //FPS = Mathf.Max(1, FPS);
-
-        t += Time.deltaTime;
-
-        if (dracoFiles.Length > 0 && t >= 1f / FPS)
+        else
         {
-            counter.Iterate(t);
-            t -= (1f/FPS);
-            PlayIndex++;
-            if (PlayIndex >= dracoFiles.Length) //dracoFiles.Length
+            if (bufferLoaded == false)
             {
-                //System.GC.Collect();
-                playIndex = 0;
-                if (isLoop == false)
+
+                bufferLoaded = true;
+                if (PlayIndex >= dracoFiles.Length)
                 {
-                    return;
+                    PlayIndex = 0;
                 }
+                
+                for (int i = 0; i < bufferSize; i++)
+                {
+                    string filepath = dracoFiles[i + PlayIndex];
+                    StartCoroutine(getRequest(filepath, OnRequestComplete, i));
+                }              
+                PlayIndex = PlayIndex + bufferSize;
             }
 
-            Play(PlayIndex);
+            if (requestsCounter >= bufferSize && playBufferReady)
+            {
+                playBufferReady = false;
+                //Array.Copy(buffer, playBuffer, bufferSize);
+                Mesh[] deepCopy = new Mesh[bufferSize];
+                for (int i = 0; i < bufferSize; i++)
+                {
+                    deepCopy[i] = new Mesh();
+                    deepCopy[i].vertices = buffer[i].vertices;
+                    deepCopy[i].colors32 = buffer[i].colors32;
+                }
+                requestsCounter = 0;
+                bufferLoaded = false;
+                PlayBuffer(deepCopy);
+            }
         }
     }
 }

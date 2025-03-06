@@ -232,8 +232,7 @@ namespace WebRTCTutorial
                 {
                     //Debug.Log("End of File received");
 
-                    _animFramerate.Iterate(Time.time - _deltaTime);
-                    _deltaTime = Time.time;
+                    _animFramerate.Tick();
                     DecodeMessage(Combine(receivedFrame));
                     receivedFrame.Clear();
                 }

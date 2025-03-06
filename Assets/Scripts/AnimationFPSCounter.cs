@@ -15,6 +15,7 @@ public class AnimationFPSCounter : MonoBehaviour
     private int _averageFromAmount = 30;
     private int _averageCounter;
     private int _currentAveraged;
+    private float timeOfLastTick = 0;
 
     void Awake()
     {
@@ -79,6 +80,43 @@ public class AnimationFPSCounter : MonoBehaviour
             };
         }
         
+
+    }
+
+    public void Tick()
+    {
+        float currentTimeFrame = Time.realtimeSinceStartup - timeOfLastTick;
+        timeOfLastTick = Time.realtimeSinceStartup;
+        _frameRateSamples[_averageCounter] = (int)Math.Round(1f / currentTimeFrame);
+
+        //_averageCounter = (_averageCounter + 1) % _averageFromAmount;
+        //Text.text = currentFrame.ToString();
+
+        // Average
+        {
+            var average = 0f;
+
+            foreach (var frameRate in _frameRateSamples)
+            {
+                average += frameRate;
+            }
+
+            _currentAveraged = (int)Math.Round(average / _averageFromAmount);
+            _currentAveraged += 1;
+            _averageCounter = (_averageCounter + 1) % _averageFromAmount;
+        }
+
+        // Assign to UI
+        {
+            Text.text = "Anim FPS: " + _currentAveraged switch
+            {
+                var x when x >= 0 && x < _cacheNumbersAmount => CachedNumberStrings[x],
+                var x when x >= _cacheNumbersAmount => $"> {_cacheNumbersAmount}",
+                var x when x < 0 => "< 0",
+                _ => "?"
+            };
+        }
+
 
     }
 }
