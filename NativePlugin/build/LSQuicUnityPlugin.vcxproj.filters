@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\a2655\Documents\Point-Cloud-player-with-Draco\NativePlugin\src\LSQuicWrapper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\a2655\Documents\Point-Cloud-player-with-Draco\NativePlugin\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{21A6510B-881C-32C3-BF19-258F7B8183C2}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

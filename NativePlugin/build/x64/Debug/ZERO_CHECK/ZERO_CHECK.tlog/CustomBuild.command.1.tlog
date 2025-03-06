@@ -1,0 +1,10 @@
+^C:\USERS\A2655\DOCUMENTS\POINT-CLOUD-PLAYER-WITH-DRACO\NATIVEPLUGIN\BUILD\CMAKEFILES\FA2CC352FD9ADD85460EA503905A35BF\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/a2655/Documents/Point-Cloud-player-with-Draco/NativePlugin -BC:/Users/a2655/Documents/Point-Cloud-player-with-Draco/NativePlugin/build --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file C:/Users/a2655/Documents/Point-Cloud-player-with-Draco/NativePlugin/build/LSQuicUnityPlugin.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

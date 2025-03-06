@@ -1,0 +1,3 @@
+C:/Users/a2655/Documents/Point-Cloud-player-with-Draco/NativePlugin/build/CMakeFiles/LSQuicUnityPlugin.dir
+C:/Users/a2655/Documents/Point-Cloud-player-with-Draco/NativePlugin/build/CMakeFiles/ALL_BUILD.dir
+C:/Users/a2655/Documents/Point-Cloud-player-with-Draco/NativePlugin/build/CMakeFiles/ZERO_CHECK.dir
