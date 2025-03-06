@@ -85,5 +85,11 @@ public class DracoToParticles : MonoBehaviour {
 
         VFX.Reinit();
     }
+    
+    public async Task Set(Mesh pcMesh)
+    {
+        VFX.SetMesh("PointCloudMesh", pcMesh);
 
+        VFX.Reinit();
+    }
 }
