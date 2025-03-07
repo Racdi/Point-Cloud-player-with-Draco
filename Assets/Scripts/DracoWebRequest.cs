@@ -27,9 +27,9 @@ public class DracoWebRequest : MonoBehaviour
     /// </summary>
     public string RemoteHostPath;
     public string ipHostPath;
-    private string _http = "http://";
-    private string _port0 = ":8080";
-    private string _port1 = ":8081";
+    private string _http = "https://";
+    private string _port0 = ":443";
+    private string _port1 = ":8443";
     private string _files = "/dracoSimple/";
     private bool _port = false;
 
