@@ -162,7 +162,7 @@ public class DracoWebRequest : MonoBehaviour
             
         }
         playBufferReady = true;
-        Debug.Log("Finished playing buffer");
+        //Debug.Log("Finished playing buffer");
     }
 
     IEnumerator getRequest(string uri, System.Action<byte[], int> callbackOnFinish, int bufferIndex)
@@ -232,6 +232,11 @@ public class DracoWebRequest : MonoBehaviour
         }
     }
 
+    public void SetNewPort(string newPort)
+    {
+        RemoteHostPath = _http + ipHostPath + ":" + newPort + _files;
+    }
+
     public void Reconnect()
     {
         ReadMode = DataReadModes.Remote;
@@ -257,7 +262,7 @@ public class DracoWebRequest : MonoBehaviour
         {
             if (bufferLoaded == false)
             {
-                Debug.Log("Begin downloading buffer");
+                //Debug.Log("Begin downloading buffer");
 
                 bufferLoaded = true;
                 if (PlayIndex >= dracoFiles.Length)
@@ -275,7 +280,7 @@ public class DracoWebRequest : MonoBehaviour
 
             if (requestsCounter >= bufferSize && playBufferReady)
             {
-                Debug.Log("Start playing buffer");
+                //Debug.Log("Start playing buffer");
                 playBufferReady = false;
 
                 /*
