@@ -10,7 +10,7 @@ public class AnimationFPSCounter : MonoBehaviour
 
     private Dictionary<int, string> CachedNumberStrings = new();
 
-    private int[] _frameRateSamples;
+    private float[] _frameRateSamples;
     private int _cacheNumbersAmount = 300;
     private int _averageFromAmount = 30;
     private int _averageCounter;
@@ -20,33 +20,14 @@ public class AnimationFPSCounter : MonoBehaviour
     void Awake()
     {
         // Cache strings and create array
+        for (int i = 0; i < _cacheNumbersAmount; i++)
         {
-            for (int i = 0; i < _cacheNumbersAmount; i++)
-            {
-                CachedNumberStrings[i] = i.ToString();
-            }
-
-            _frameRateSamples = new int[_averageFromAmount];
+            CachedNumberStrings[i] = i.ToString();
         }
+
+        _frameRateSamples = new float[_averageFromAmount];
     }
 
-    void Update()
-    {
-        /*
-        // Sample
-        {
-            var currentFrame = (int)Math.Round(1f / DeltaType switch
-            {
-                DeltaTimeType.Smooth => Time.smoothDeltaTime,
-                DeltaTimeType.Unscaled => Time.unscaledDeltaTime,
-                _ => Time.unscaledDeltaTime
-            });
-            _frameRateSamples[_averageCounter] = currentFrame;
-        }
-        */
-
-        
-    }
     public void Iterate(float deltatime)
     {
         var currentFrame = (int)Math.Round(1f / deltatime);
@@ -87,10 +68,10 @@ public class AnimationFPSCounter : MonoBehaviour
     {
         float currentTimeFrame = Time.realtimeSinceStartup - timeOfLastTick;
         timeOfLastTick = Time.realtimeSinceStartup;
-        _frameRateSamples[_averageCounter] = (int)Math.Round(1f / currentTimeFrame);
-
-        //_averageCounter = (_averageCounter + 1) % _averageFromAmount;
-        //Text.text = currentFrame.ToString();
+        _frameRateSamples[_averageCounter] = currentTimeFrame;
+        //Debug.Log(currentTimeFrame);
+        _averageCounter = (_averageCounter + 1) % _averageFromAmount;
+        
 
         // Average
         {
@@ -100,10 +81,10 @@ public class AnimationFPSCounter : MonoBehaviour
             {
                 average += frameRate;
             }
-
-            _currentAveraged = (int)Math.Round(average / _averageFromAmount);
-            _currentAveraged += 1;
-            _averageCounter = (_averageCounter + 1) % _averageFromAmount;
+            Debug.Log(average);
+            _currentAveraged = (int)Math.Round(_averageFromAmount / average);
+            //_currentAveraged += 1;
+            //_averageCounter = (_averageCounter + 1) % _averageFromAmount;
         }
 
         // Assign to UI

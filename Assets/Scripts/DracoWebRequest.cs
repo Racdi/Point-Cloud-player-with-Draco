@@ -34,6 +34,7 @@ public class DracoWebRequest : MonoBehaviour
     private bool _port = false;
 
     public float FPS = 30;
+    private float inverseFPS;
     public int bufferSize = 30;
     public bool isLoop = true;
 
@@ -73,6 +74,7 @@ public class DracoWebRequest : MonoBehaviour
         playBufferReady = true;
         particlesScript = gameObject.GetComponent<DracoToParticles>();
         PlayIndex = 0;
+        inverseFPS = 1000 / FPS;
         //UpdateDracoFiles();
     }
 
@@ -136,10 +138,11 @@ public class DracoWebRequest : MonoBehaviour
 
     async Task PlayBuffer(Mesh[] deepCopy)
     {
+        float startTime = Time.realtimeSinceStartup;
         for (int i = 0; i < bufferSize; i++)
         {
             //Debug.Log("Showing frame number " + i);
-            float startTime = Time.realtimeSinceStartup;
+            
             //var verticesList = new List<Vector3>(deepCopy[i].vertices);
             //var colorsList = new List<Color32>(deepCopy[i].colors32);
 
@@ -147,19 +150,20 @@ public class DracoWebRequest : MonoBehaviour
 
             float elapsedS = Time.realtimeSinceStartup - startTime;
             float elapsedMS = elapsedS * 1000;
-            float desired = 1000 / FPS;
+            
             //Debug.Log(elapsedMS);
-            if (elapsedMS < desired)
+            if (elapsedMS < inverseFPS)
             {
-                //Debug.Log("Must wait " + (desired - elapsedMS));
-                await Task.Delay((int)(desired - elapsedMS));
+                int delay = (int)Math.Round(inverseFPS - elapsedMS);
+                Debug.Log("Must wait " + delay);
+                await Task.Delay(delay);
             }
             else
             {
                 await Task.Delay(1);
             }
                 counter.Tick();
-            
+                startTime = Time.realtimeSinceStartup;
         }
         playBufferReady = true;
         //Debug.Log("Finished playing buffer");
@@ -275,7 +279,7 @@ public class DracoWebRequest : MonoBehaviour
                     string filepath = dracoFiles[i + PlayIndex];
                     StartCoroutine(getRequest(filepath, OnRequestComplete, i));
                 }              
-                PlayIndex = PlayIndex + bufferSize;
+                PlayIndex += bufferSize;
             }
 
             if (requestsCounter >= bufferSize && playBufferReady)
