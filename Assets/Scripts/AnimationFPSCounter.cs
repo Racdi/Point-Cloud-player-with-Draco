@@ -81,7 +81,7 @@ public class AnimationFPSCounter : MonoBehaviour
             {
                 average += frameRate;
             }
-            Debug.Log(average);
+            //Debug.Log(average);
             _currentAveraged = (int)Math.Round(_averageFromAmount / average);
             //_currentAveraged += 1;
             //_averageCounter = (_averageCounter + 1) % _averageFromAmount;

@@ -155,7 +155,7 @@ public class DracoWebRequest : MonoBehaviour
             if (elapsedMS < inverseFPS)
             {
                 int delay = (int)Math.Round(inverseFPS - elapsedMS);
-                Debug.Log("Must wait " + delay);
+                //Debug.Log("Must wait " + delay);
                 await Task.Delay(delay);
             }
             else
@@ -287,16 +287,6 @@ public class DracoWebRequest : MonoBehaviour
                 //Debug.Log("Start playing buffer");
                 playBufferReady = false;
 
-                /*
-                //Array.Copy(buffer, playBuffer, bufferSize);
-                Mesh[] deepCopy = new Mesh[bufferSize];
-                for (int i = 0; i < bufferSize; i++)
-                {
-                    deepCopy[i] = new Mesh();
-                    deepCopy[i].vertices = buffer[i].vertices;
-                    deepCopy[i].colors32 = buffer[i].colors32;
-                }
-                */
                 if(isCurrentBuffer1 == false)
                 {
                     PlayBuffer(buffer0);
@@ -309,7 +299,6 @@ public class DracoWebRequest : MonoBehaviour
                 }
                 requestsCounter = 0;
                 bufferLoaded = false;
-                //PlayBuffer(deepCopy);
             }
         }
     }
