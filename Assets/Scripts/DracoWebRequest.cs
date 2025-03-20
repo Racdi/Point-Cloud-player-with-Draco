@@ -136,7 +136,7 @@ public class DracoWebRequest : MonoBehaviour
         return "<a href=\"(?<name>.+drc)\">.+drc</a>";
     }
 
-    async Task PlayBuffer(Mesh[] deepCopy)
+    async Task PlayBuffer(Mesh[] currentBuffer)
     {
         float startTime = Time.realtimeSinceStartup;
         for (int i = 0; i < bufferSize; i++)
@@ -146,7 +146,7 @@ public class DracoWebRequest : MonoBehaviour
             //var verticesList = new List<Vector3>(deepCopy[i].vertices);
             //var colorsList = new List<Color32>(deepCopy[i].colors32);
 
-            await particlesScript.Set(deepCopy[i]);
+            particlesScript.Set(currentBuffer[i]);
 
             float elapsedS = Time.realtimeSinceStartup - startTime;
             float elapsedMS = elapsedS * 1000;

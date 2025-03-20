@@ -11,7 +11,7 @@ namespace WebRTCTutorial
     public class WebRTCDataTransfer : MonoBehaviour
     {
         [SerializeField]
-        private string url = $"ws://10.1.2.159:8080";
+        private string url = $"ws://10.1.5.1:8055";
         private WebSocket _ws;
         
         private readonly ConcurrentQueue<string> _receivedMessages = new ConcurrentQueue<string>();

@@ -9,6 +9,8 @@ using Draco;
 using WebSocketSharp;
 using Newtonsoft.Json;
 using WebRTCTutorial.DTO;
+using System.Threading.Tasks;
+using Unity.VisualScripting;
 
 namespace WebRTCTutorial
 {
@@ -41,7 +43,6 @@ namespace WebRTCTutorial
         private Button _disconnect;
         [SerializeField]
         private AnimationFPSCounter _animFramerate;
-        private float _deltaTime;
 
 
         private void OnNegotiationNeeded()
@@ -211,7 +212,9 @@ namespace WebRTCTutorial
 
         protected void OnDestroy()
         {
-            Disconnect();
+            remoteDataChannel?.Close();
+            _peerConnection?.Close();
+            _peerConnection?.Dispose();
         }
 
         public void Connect()
@@ -224,39 +227,38 @@ namespace WebRTCTutorial
                 _connect.interactable = false;
                 _message.interactable = true;
                 _disconnect.interactable = true;
-                _deltaTime = Time.time;
             };
-            onDataChannelMessage = bytes =>
+            onDataChannelMessage = async bytes =>
             {
                 if (System.Text.Encoding.UTF8.GetString(bytes) == "EOF")
                 {
                     //Debug.Log("End of File received");
-
-                    _animFramerate.Tick();
-                    DecodeMessage(Combine(receivedFrame));
+                    await DecodeMessage(Combine(receivedFrame));
                     receivedFrame.Clear();
+                    receivedFrame.TrimExcess();
                 }
                 else
                 {
                     //Debug.Log("Piece of PC received");
                     receivedFrame.Add(bytes);
                 }
+                
             };
         }
 
-        private async void DecodeMessage(byte[] fullFrame)
+        private async Task DecodeMessage(byte[] fullFrame)
         {
+            //currentMesh.Clear();
             var meshDataArray = Mesh.AllocateWritableMeshData(1);
             var result = await DracoDecoder.DecodeMesh(meshDataArray[0], fullFrame);
             Mesh.ApplyAndDisposeWritableMeshData(meshDataArray, currentMesh);
-            //var verticesList = new List<Vector3>(currentMesh.vertices);
-            //var colorsList = new List<Color32>(currentMesh.colors32);
-            await particlesScript.Set(currentMesh);
+            particlesScript.Set(currentMesh);
+            _animFramerate.Tick();
         }
 
         public void Disconnect()
         {
-            remoteDataChannel.Close();
+            remoteDataChannel?.Close();
             _peerConnection?.Close();
             _peerConnection?.Dispose();
             _connect.interactable = true;
