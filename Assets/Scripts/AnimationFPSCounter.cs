@@ -17,6 +17,8 @@ public class AnimationFPSCounter : MonoBehaviour
     private int _currentAveraged;
     private float timeOfLastTick = 0;
 
+    public int recordedFPS;
+
     void Awake()
     {
         // Cache strings and create array
@@ -86,7 +88,7 @@ public class AnimationFPSCounter : MonoBehaviour
             //_currentAveraged += 1;
             //_averageCounter = (_averageCounter + 1) % _averageFromAmount;
         }
-
+        recordedFPS = _currentAveraged;
         // Assign to UI
         {
             Text.text = "Anim FPS: " + _currentAveraged switch

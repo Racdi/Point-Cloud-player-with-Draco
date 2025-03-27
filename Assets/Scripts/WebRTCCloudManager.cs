@@ -44,7 +44,41 @@ namespace WebRTCTutorial
         [SerializeField]
         private AnimationFPSCounter _animFramerate;
 
+        private float _processingTime;
+        private int _bufferHealth;
+        private float _lastMessageTime;
+        private int _frameCounter;
+        private Queue<Task> _decodingTasks = new Queue<Task>();
+        private int _maxConcurrentDecodes = 2; // Limit concurrent decoding tasks
+        private bool _sendingStats = false;
 
+        private void SendPerformanceStats()
+        {
+            if (!_sendingStats || remoteDataChannel == null || remoteDataChannel.ReadyState != RTCDataChannelState.Open)
+        return;
+
+            var stats = new
+            {
+                processingTime = _processingTime,
+                bufferHealth = receivedFrame.Count,
+                fps = _animFramerate.recordedFPS
+            };
+
+            string statsJson = "STATS:" + JsonConvert.SerializeObject(stats);
+            remoteDataChannel.Send(statsJson);
+        }
+
+        // Call this periodically (e.g., in Update method)
+        private void Update()
+        {
+            // Send stats every second
+            if (Time.time - _lastMessageTime > 1.0f && remoteDataChannel != null &&
+                remoteDataChannel.ReadyState == RTCDataChannelState.Open)
+            {
+                SendPerformanceStats();
+                _lastMessageTime = Time.time;
+            }
+        }
         private void OnNegotiationNeeded()
         {
             Debug.Log("SDP Offer <-> Answer exchange requested by the webRTC client.");
@@ -228,24 +262,68 @@ namespace WebRTCTutorial
                 _message.interactable = true;
                 _disconnect.interactable = true;
             };
-            onDataChannelMessage = async bytes =>
+            onDataChannelMessage = bytes =>
             {
                 if (System.Text.Encoding.UTF8.GetString(bytes) == "EOF")
-                {
-                    //Debug.Log("End of File received");
-                    await DecodeMessage(Combine(receivedFrame));
+                { 
+                    byte[] frameData = Combine(receivedFrame);
+
+                    // Start a new decode task
+                    if (_decodingTasks.Count < _maxConcurrentDecodes)
+                    {
+                        var task = DecodeMessageAsync(frameData);
+                        _decodingTasks.Enqueue(task);
+                        task.ContinueWith(_ => 
+                        {
+                            _decodingTasks.Dequeue();
+                            // Send ACK to signal we're ready for more
+                            remoteDataChannel?.Send("ACK");
+                        });
+                    }
+
                     receivedFrame.Clear();
                     receivedFrame.TrimExcess();
                 }
                 else
                 {
-                    //Debug.Log("Piece of PC received");
                     receivedFrame.Add(bytes);
                 }
-                
             };
         }
+        private async Task DecodeMessageAsync(byte[] fullFrame)
+        {
+            System.Diagnostics.Stopwatch sw = System.Diagnostics.Stopwatch.StartNew();
 
+            try
+            {
+                var meshDataArray = Mesh.AllocateWritableMeshData(1);
+                var result = await DracoDecoder.DecodeMesh(meshDataArray[0], fullFrame);
+
+                // Switch back to main thread for Unity operations
+                await SwitchToMainThread();
+
+                Mesh.ApplyAndDisposeWritableMeshData(meshDataArray, currentMesh);
+                particlesScript.Set(currentMesh);
+
+                _animFramerate.Tick();
+                _frameCounter++;
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"Error decoding frame: {ex.Message}");
+            }
+
+            sw.Stop();
+            _processingTime = sw.ElapsedMilliseconds;
+        }
+
+        // Helper method to ensure Unity operations run on the main thread
+        private Task SwitchToMainThread()
+        {
+            TaskCompletionSource<bool> tcs = new TaskCompletionSource<bool>();
+            UnityMainThreadDispatcher.Instance().Enqueue(() => tcs.SetResult(true));
+            return tcs.Task;
+        }
         private async Task DecodeMessage(byte[] fullFrame)
         {
             //currentMesh.Clear();
