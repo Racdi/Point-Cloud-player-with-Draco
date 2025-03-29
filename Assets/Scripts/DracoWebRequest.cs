@@ -99,7 +99,7 @@ public class DracoWebRequest : MonoBehaviour
         //UpdateDracoFiles();
     }
 
-    private void UpdateDracoFiles()
+    void UpdateDracoFiles()
     {
         StartCoroutine(GetFilesFromHTTP(RemoteHostPath, (val) => { dracoFiles = val; }));
     }
@@ -275,7 +275,7 @@ public class DracoWebRequest : MonoBehaviour
     private void ResetHostPath()
     {
         RemoteHostPath = _http + ipHostPath + _port + _files;
-        UpdateDracoFiles();
+        //UpdateDracoFiles();
     }
 
     public void Reconnect()
@@ -329,7 +329,8 @@ public class DracoWebRequest : MonoBehaviour
                 if (sliceTimestampList[checkedSlices] < _TimestampThreshold)
                 {
                     SetPortFromSliceList(checkedSlices);
-                    break;
+                    UpdateDracoFiles();
+                    return;
                 }
                 
                 checkedSlices++;
@@ -340,7 +341,8 @@ public class DracoWebRequest : MonoBehaviour
                 if (sliceTimestampList[checkedSlices] < sliceTimestampList[currentSlice])
                 {
                     SetPortFromSliceList(checkedSlices);
-                    break;
+                    UpdateDracoFiles();
+                    return;
                 }
                 checkedSlices++;
             }
