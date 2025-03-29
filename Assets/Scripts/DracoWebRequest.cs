@@ -50,8 +50,8 @@ public class DracoWebRequest : MonoBehaviour
     public int bufferSize = 30;
     public bool isLoop = true;
 
-    private float startBufferingTime;
-    private float endBufferingTime;
+    private float[] startBufferingTime;
+    private float[] endBufferingTime;
 
     private int playIndex, lastPlayedIndex;
     private string[] dracoFiles;
@@ -61,6 +61,8 @@ public class DracoWebRequest : MonoBehaviour
 
     private Mesh currentMesh;
 
+    //[SerializeField]
+    private int numberOfBuffers = 2;
     private Mesh[] buffer0, buffer1; //Stores the files as they are received, another array is used to play them
     private bool isCurrentBuffer1 = false;
     private bool bufferLoaded;
@@ -91,6 +93,8 @@ public class DracoWebRequest : MonoBehaviour
         PlayIndex = 0;
         inverseFPS = 1000 / FPS;
         sliceTimestampList = new float[sliceAddressList.Length];
+        startBufferingTime = new float[numberOfBuffers];
+        endBufferingTime = new float[numberOfBuffers];
         ResetTimestamps();
         //UpdateDracoFiles();
     }
@@ -229,7 +233,16 @@ public class DracoWebRequest : MonoBehaviour
 
         if (requestsCounter >= bufferSize)
         {
-            endBufferingTime = Time.realtimeSinceStartup;
+            if (isCurrentBuffer1 == false)
+            {
+                endBufferingTime[0] = Time.realtimeSinceStartup;
+                //CheckSliceTimestamp(0);
+            }
+            else
+            {
+                endBufferingTime[1] = Time.realtimeSinceStartup;
+                CheckSliceTimestamp(1);
+            }
         }
     }
 
@@ -291,10 +304,11 @@ public class DracoWebRequest : MonoBehaviour
             sliceTimestampList[i] = -1;
         }
     }
-    private void CheckSliceTimestamp()
+    private void CheckSliceTimestamp(int currentBuffer)
     {
         Debug.Log("Current slice is: " + currentSlice);
-        float currentTimestamp = endBufferingTime - startBufferingTime;
+        float currentTimestamp = endBufferingTime[currentBuffer] - startBufferingTime[currentBuffer];
+        Debug.Log(currentTimestamp);
         sliceTimestampList[currentSlice] = currentTimestamp;
 
         if (!CheckSlicesTimestampEnabled)
@@ -312,7 +326,7 @@ public class DracoWebRequest : MonoBehaviour
             
             int checkedSlices = 0;
             while(checkedSlices < sliceAddressList.Length){
-                if (sliceTimestampList[checkedSlices] < 0 || sliceTimestampList[checkedSlices] < _TimestampThreshold)
+                if (sliceTimestampList[checkedSlices] < _TimestampThreshold)
                 {
                     SetPortFromSliceList(checkedSlices);
                     break;
@@ -357,11 +371,20 @@ public class DracoWebRequest : MonoBehaviour
                     return ;
                 }
 
+                if(isCurrentBuffer1 == false)
+                {
+                    startBufferingTime[0] = Time.realtimeSinceStartup;
+                }
+                else
+                {
+                    startBufferingTime[1] = Time.realtimeSinceStartup;
+                }
 
                 for (int i = 0; i < bufferSize; i++)
                 {
                     string filepath = dracoFiles[i + PlayIndex];
-                    startBufferingTime = Time.realtimeSinceStartup;
+                    
+                        
                     StartCoroutine(getRequest(filepath, OnRequestComplete, i));
                 }              
                 PlayIndex += bufferSize;
@@ -380,12 +403,11 @@ public class DracoWebRequest : MonoBehaviour
                 {
                     PlayBuffer(buffer1);
                     isCurrentBuffer1 = false;
+
                 }
                 requestsCounter = 0;
                 bufferLoaded = false;
                 
-
-                CheckSliceTimestamp();
             }
             
         }
