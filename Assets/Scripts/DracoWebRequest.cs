@@ -28,17 +28,29 @@ public class DracoWebRequest : MonoBehaviour
     public string RemoteHostPath;
     public string ipHostPath;
     private string _http = "https://";
-    private string _port0 = ":443";
-    private string _port1 = ":8443";
+    private string _port = ":443";
     private string _files = "/dracoSimple/";
-    private bool _port = false;
+
+    [SerializeField]
+    private string[] sliceAddressList;
+    private float[] sliceTimestampList;
+
+    private int currentSlice=0;
+
+    [SerializeField]
+    private SliceGraphicsChanger _changer;
+
+    [SerializeField]
+    private float _TimestampThreshold = 1.0f;
 
     public float FPS = 30;
     private float inverseFPS;
     public int bufferSize = 30;
     public bool isLoop = true;
 
-    private float t;
+    private float startBufferingTime;
+    private float endBufferingTime;
+
     private int playIndex, lastPlayedIndex;
     private string[] dracoFiles;
 
@@ -73,8 +85,10 @@ public class DracoWebRequest : MonoBehaviour
         bufferLoaded = false;
         playBufferReady = true;
         particlesScript = gameObject.GetComponent<DracoToParticles>();
+        
         PlayIndex = 0;
         inverseFPS = 1000 / FPS;
+        sliceTimestampList = new float[sliceAddressList.Length];
         //UpdateDracoFiles();
     }
 
@@ -206,7 +220,14 @@ public class DracoWebRequest : MonoBehaviour
         {
             Mesh.ApplyAndDisposeWritableMeshData(meshDataArray, buffer1[bufferIndex]);
         }
-            requestsCounter = requestsCounter + 1;
+        requestsCounter = requestsCounter + 1;
+
+        //Check if all requests are completed for timestamping
+
+        if (requestsCounter >= bufferSize)
+        {
+            endBufferingTime = Time.realtimeSinceStartup;
+        }
     }
 
     public void SetNewAddress(string newAddress)
@@ -217,28 +238,28 @@ public class DracoWebRequest : MonoBehaviour
     public void SetNewIP(string newIP)
     {
         ipHostPath = newIP;
-        RemoteHostPath = _http + ipHostPath + _port0 + _files;
-    }
-
-    public void ChangePort()
-    {
-        if(_port == true)
-        {
-            RemoteHostPath = _http + ipHostPath + _port0 + _files;
-            _port = false;
-            Reconnect();
-        }
-        else
-        {
-            RemoteHostPath = _http + ipHostPath + _port1 + _files;
-            _port = true;
-            Reconnect();
-        }
+        ResetHostPath();
     }
 
     public void SetNewPort(string newPort)
     {
-        RemoteHostPath = _http + ipHostPath + ":" + newPort + _files;
+        Debug.Log("Not changing slice, undefined behavior");
+        _port = ":" + newPort;
+        ResetHostPath();
+    }
+
+    public void SetPortFromSliceList(int slice)
+    {
+        currentSlice = slice;
+        _port = ":" + sliceAddressList[currentSlice];
+        ResetHostPath();
+        _changer.ChangeSlice(currentSlice);
+    }
+
+    private void ResetHostPath()
+    {
+        RemoteHostPath = _http + ipHostPath + _port + _files;
+        UpdateDracoFiles();
     }
 
     public void Reconnect()
@@ -256,6 +277,36 @@ public class DracoWebRequest : MonoBehaviour
         }
     }
 
+    private void CheckSliceTimestamp()
+    {
+        Debug.Log("Current slice is: " + currentSlice);
+        float currentTimestamp = endBufferingTime - startBufferingTime;
+
+        if (currentTimestamp < _TimestampThreshold)
+        {
+            Debug.Log("Timestamp is fine");
+            sliceTimestampList[currentSlice] = currentTimestamp;
+        }
+        else
+        {
+            Debug.Log("Timestamp NOT FINE!");
+            sliceTimestampList[currentSlice] = currentTimestamp;
+            int checkedSlices = 0;
+            
+            while(checkedSlices < sliceAddressList.Length){
+                if (sliceTimestampList[checkedSlices] == null || sliceTimestampList[checkedSlices] < _TimestampThreshold)
+                {
+                    SetPortFromSliceList(checkedSlices);
+                    break;
+                }
+                
+                checkedSlices++;
+            }
+
+        }
+
+    }
+
     private void Update()
     {
         if (dracoFiles == null)
@@ -269,20 +320,25 @@ public class DracoWebRequest : MonoBehaviour
                 //Debug.Log("Begin downloading buffer");
 
                 bufferLoaded = true;
-                if (PlayIndex >= dracoFiles.Length)
+                if (PlayIndex >= dracoFiles.Length && isLoop)
                 {
                     PlayIndex = 0;
                 }
-                
+                else if (!isLoop)
+                {
+                    return ;
+                }
+
+
                 for (int i = 0; i < bufferSize; i++)
                 {
                     string filepath = dracoFiles[i + PlayIndex];
+                    startBufferingTime = Time.realtimeSinceStartup;
                     StartCoroutine(getRequest(filepath, OnRequestComplete, i));
                 }              
                 PlayIndex += bufferSize;
             }
-
-            if (requestsCounter >= bufferSize && playBufferReady)
+            if(requestsCounter >= bufferSize && playBufferReady)
             {
                 //Debug.Log("Start playing buffer");
                 playBufferReady = false;
@@ -299,7 +355,11 @@ public class DracoWebRequest : MonoBehaviour
                 }
                 requestsCounter = 0;
                 bufferLoaded = false;
+                
+
+                CheckSliceTimestamp();
             }
+            
         }
     }
 }

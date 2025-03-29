@@ -632,7 +632,7 @@ GameObject:
   - component: {fileID: 139203839}
   - component: {fileID: 139203838}
   m_Layer: 0
-  m_Name: Port1
+  m_Name: Port0
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -704,8 +704,8 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 6149655321499409876}
         m_TargetAssemblyTypeName: DracoWebRequest, Assembly-CSharp
-        m_MethodName: SetNewPort
-        m_Mode: 5
+        m_MethodName: SetPortFromSliceList
+        m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -714,34 +714,10 @@ MonoBehaviour:
           m_StringArgument: 5001
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 864321047}
-        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
-        m_MethodName: SetActive
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 1
-        m_CallState: 2
-      - m_Target: {fileID: 496958226}
-        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
-        m_MethodName: SetActive
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 1126269346}
-        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
-        m_MethodName: SetActive
-        m_Mode: 6
+      - m_Target: {fileID: 768327399}
+        m_TargetAssemblyTypeName: SliceGraphicsChanger, Assembly-CSharp
+        m_MethodName: ChangeSlice
+        m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -801,7 +777,7 @@ GameObject:
   - component: {fileID: 167367754}
   - component: {fileID: 167367753}
   m_Layer: 0
-  m_Name: Port3
+  m_Name: Port2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -873,51 +849,27 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 6149655321499409876}
         m_TargetAssemblyTypeName: DracoWebRequest, Assembly-CSharp
-        m_MethodName: SetNewPort
-        m_Mode: 5
+        m_MethodName: SetPortFromSliceList
+        m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
+          m_IntArgument: 2
           m_FloatArgument: 0
           m_StringArgument: 443
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 864321047}
-        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
-        m_MethodName: SetActive
-        m_Mode: 6
+      - m_Target: {fileID: 768327399}
+        m_TargetAssemblyTypeName: SliceGraphicsChanger, Assembly-CSharp
+        m_MethodName: ChangeSlice
+        m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
+          m_IntArgument: 2
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 496958226}
-        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
-        m_MethodName: SetActive
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 1126269346}
-        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
-        m_MethodName: SetActive
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 1
         m_CallState: 2
 --- !u!114 &167367754
 MonoBehaviour:
@@ -1081,7 +1033,7 @@ GameObject:
   - component: {fileID: 491297072}
   - component: {fileID: 491297071}
   m_Layer: 0
-  m_Name: Port2
+  m_Name: Port1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1153,48 +1105,24 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 6149655321499409876}
         m_TargetAssemblyTypeName: DracoWebRequest, Assembly-CSharp
-        m_MethodName: SetNewPort
-        m_Mode: 5
+        m_MethodName: SetPortFromSliceList
+        m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
+          m_IntArgument: 1
           m_FloatArgument: 0
           m_StringArgument: 5002
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 864321047}
-        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
-        m_MethodName: SetActive
-        m_Mode: 6
+      - m_Target: {fileID: 768327399}
+        m_TargetAssemblyTypeName: SliceGraphicsChanger, Assembly-CSharp
+        m_MethodName: ChangeSlice
+        m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 496958226}
-        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
-        m_MethodName: SetActive
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 1
-        m_CallState: 2
-      - m_Target: {fileID: 1126269346}
-        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
-        m_MethodName: SetActive
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
+          m_IntArgument: 1
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
@@ -1773,6 +1701,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 768327398}
+  - component: {fileID: 768327399}
   m_Layer: 0
   m_Name: SliceGraphics
   m_TagString: Untagged
@@ -1802,6 +1731,22 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &768327399
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 768327397}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5042e86e596f3a4c898dc65c72496db, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sliceGraphics:
+  - {fileID: 1126269346}
+  - {fileID: 496958226}
+  - {fileID: 864321047}
 --- !u!1 &790224032
 GameObject:
   m_ObjectHideFlags: 0
@@ -1994,7 +1939,7 @@ GameObject:
   - component: {fileID: 864321050}
   - component: {fileID: 864321049}
   m_Layer: 0
-  m_Name: Slice1
+  m_Name: Slice3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2330,7 +2275,7 @@ GameObject:
   - component: {fileID: 1126269349}
   - component: {fileID: 1126269348}
   m_Layer: 0
-  m_Name: Slice3
+  m_Name: Slice1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3752,6 +3697,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Text: {fileID: 1587887721}
+  recordedFPS: 0
 --- !u!1 &1614204258
 GameObject:
   m_ObjectHideFlags: 0
@@ -4855,7 +4801,13 @@ MonoBehaviour:
   ReadMode: 0
   RemoteHostPath: https://ateixs.me/dracoSimple/
   ipHostPath: 10.1.5.1
-  FPS: 33
+  sliceAddressList:
+  - 443
+  - 5002
+  - 5001
+  _changer: {fileID: 768327399}
+  _TimestampThreshold: 1
+  FPS: 31
   bufferSize: 30
   isLoop: 1
   monitor: {fileID: 6798676864414862249}
