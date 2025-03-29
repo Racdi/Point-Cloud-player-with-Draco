@@ -37,6 +37,8 @@ public class DracoWebRequest : MonoBehaviour
 
     private int currentSlice=0;
 
+    private bool CheckSlicesTimestampEnabled = true;
+
     [SerializeField]
     private SliceGraphicsChanger _changer;
 
@@ -89,6 +91,7 @@ public class DracoWebRequest : MonoBehaviour
         PlayIndex = 0;
         inverseFPS = 1000 / FPS;
         sliceTimestampList = new float[sliceAddressList.Length];
+        ResetTimestamps();
         //UpdateDracoFiles();
     }
 
@@ -276,30 +279,55 @@ public class DracoWebRequest : MonoBehaviour
             FPS = checkOutput;
         }
     }
+    public void SwitchCheckTimestampsFunction()
+    {
+        CheckSlicesTimestampEnabled = !CheckSlicesTimestampEnabled;
+    }
 
+    public void ResetTimestamps()
+    {
+        for (int i = 0; i < sliceTimestampList.Length; i++)
+        {
+            sliceTimestampList[i] = -1;
+        }
+    }
     private void CheckSliceTimestamp()
     {
         Debug.Log("Current slice is: " + currentSlice);
         float currentTimestamp = endBufferingTime - startBufferingTime;
+        sliceTimestampList[currentSlice] = currentTimestamp;
+
+        if (!CheckSlicesTimestampEnabled)
+        {
+            return;
+        }
 
         if (currentTimestamp < _TimestampThreshold)
         {
-            Debug.Log("Timestamp is fine");
-            sliceTimestampList[currentSlice] = currentTimestamp;
+            Debug.Log("Timestamp is fine");    
         }
         else
         {
             Debug.Log("Timestamp NOT FINE!");
-            sliceTimestampList[currentSlice] = currentTimestamp;
-            int checkedSlices = 0;
             
+            int checkedSlices = 0;
             while(checkedSlices < sliceAddressList.Length){
-                if (sliceTimestampList[checkedSlices] == null || sliceTimestampList[checkedSlices] < _TimestampThreshold)
+                if (sliceTimestampList[checkedSlices] < 0 || sliceTimestampList[checkedSlices] < _TimestampThreshold)
                 {
                     SetPortFromSliceList(checkedSlices);
                     break;
                 }
                 
+                checkedSlices++;
+            }
+            checkedSlices = 0;
+            while (checkedSlices < sliceAddressList.Length)
+            {
+                if (sliceTimestampList[checkedSlices] < sliceTimestampList[currentSlice])
+                {
+                    SetPortFromSliceList(checkedSlices);
+                    break;
+                }
                 checkedSlices++;
             }
 
