@@ -13,6 +13,7 @@ using PCP;
 using PCP.Utils;
 using Draco;
 using Unity.VisualScripting;
+using TMPro;
 
 public class DracoWebRequest : MonoBehaviour
 {
@@ -58,6 +59,7 @@ public class DracoWebRequest : MonoBehaviour
 
     public StatusMonitor monitor;
     public AnimationFPSCounter counter;
+    public TextMeshProUGUI downloadTimerText;
 
     private Mesh currentMesh;
 
@@ -237,12 +239,15 @@ public class DracoWebRequest : MonoBehaviour
             {
                 endBufferingTime[0] = Time.realtimeSinceStartup;
                 //CheckSliceTimestamp(0);
+                downloadTimerText.text = "Last download took " + ((endBufferingTime[0] - startBufferingTime[0]) * 1000).ToString("F0") + " ms";
             }
             else
             {
                 endBufferingTime[1] = Time.realtimeSinceStartup;
                 CheckSliceTimestamp(1);
+                downloadTimerText.text = "Last download took " + ((endBufferingTime[1] - startBufferingTime[1]) * 1000).ToString("F0") + " ms";
             }
+            
         }
     }
 
