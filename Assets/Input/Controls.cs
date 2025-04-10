@@ -28,18 +28,9 @@ public partial class @Controls: IInputActionCollection2, IDisposable
             ""id"": ""513107af-465d-463e-b58f-4b7b0eef15ff"",
             ""actions"": [
                 {
-                    ""name"": ""HideUI"",
+                    ""name"": ""EnableUI"",
                     ""type"": ""Button"",
                     ""id"": ""cb0a210b-e7f8-4292-bf10-fbabacd81149"",
-                    ""expectedControlType"": ""Button"",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": false
-                },
-                {
-                    ""name"": ""ShowUI"",
-                    ""type"": ""Button"",
-                    ""id"": ""b8238fc5-588d-464f-aa8e-0ebc6cc53ffa"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """",
@@ -49,23 +40,12 @@ public partial class @Controls: IInputActionCollection2, IDisposable
             ""bindings"": [
                 {
                     ""name"": """",
-                    ""id"": ""5c3560c8-4292-45be-b203-4f6016360352"",
-                    ""path"": ""*/{PrimaryButton}"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": ""XRControlScheme"",
-                    ""action"": ""ShowUI"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
                     ""id"": ""4a4f9d3c-f894-49ec-96ec-6966d73eecb4"",
-                    ""path"": ""*/{SecondaryButton}"",
+                    ""path"": ""<XRController>{LeftHand}/menu"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": ""XRControlScheme"",
-                    ""action"": ""HideUI"",
+                    ""action"": ""EnableUI"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -98,8 +78,7 @@ public partial class @Controls: IInputActionCollection2, IDisposable
 }");
         // XR
         m_XR = asset.FindActionMap("XR", throwIfNotFound: true);
-        m_XR_HideUI = m_XR.FindAction("HideUI", throwIfNotFound: true);
-        m_XR_ShowUI = m_XR.FindAction("ShowUI", throwIfNotFound: true);
+        m_XR_EnableUI = m_XR.FindAction("EnableUI", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -161,14 +140,12 @@ public partial class @Controls: IInputActionCollection2, IDisposable
     // XR
     private readonly InputActionMap m_XR;
     private List<IXRActions> m_XRActionsCallbackInterfaces = new List<IXRActions>();
-    private readonly InputAction m_XR_HideUI;
-    private readonly InputAction m_XR_ShowUI;
+    private readonly InputAction m_XR_EnableUI;
     public struct XRActions
     {
         private @Controls m_Wrapper;
         public XRActions(@Controls wrapper) { m_Wrapper = wrapper; }
-        public InputAction @HideUI => m_Wrapper.m_XR_HideUI;
-        public InputAction @ShowUI => m_Wrapper.m_XR_ShowUI;
+        public InputAction @EnableUI => m_Wrapper.m_XR_EnableUI;
         public InputActionMap Get() { return m_Wrapper.m_XR; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -178,22 +155,16 @@ public partial class @Controls: IInputActionCollection2, IDisposable
         {
             if (instance == null || m_Wrapper.m_XRActionsCallbackInterfaces.Contains(instance)) return;
             m_Wrapper.m_XRActionsCallbackInterfaces.Add(instance);
-            @HideUI.started += instance.OnHideUI;
-            @HideUI.performed += instance.OnHideUI;
-            @HideUI.canceled += instance.OnHideUI;
-            @ShowUI.started += instance.OnShowUI;
-            @ShowUI.performed += instance.OnShowUI;
-            @ShowUI.canceled += instance.OnShowUI;
+            @EnableUI.started += instance.OnEnableUI;
+            @EnableUI.performed += instance.OnEnableUI;
+            @EnableUI.canceled += instance.OnEnableUI;
         }
 
         private void UnregisterCallbacks(IXRActions instance)
         {
-            @HideUI.started -= instance.OnHideUI;
-            @HideUI.performed -= instance.OnHideUI;
-            @HideUI.canceled -= instance.OnHideUI;
-            @ShowUI.started -= instance.OnShowUI;
-            @ShowUI.performed -= instance.OnShowUI;
-            @ShowUI.canceled -= instance.OnShowUI;
+            @EnableUI.started -= instance.OnEnableUI;
+            @EnableUI.performed -= instance.OnEnableUI;
+            @EnableUI.canceled -= instance.OnEnableUI;
         }
 
         public void RemoveCallbacks(IXRActions instance)
@@ -222,7 +193,6 @@ public partial class @Controls: IInputActionCollection2, IDisposable
     }
     public interface IXRActions
     {
-        void OnHideUI(InputAction.CallbackContext context);
-        void OnShowUI(InputAction.CallbackContext context);
+        void OnEnableUI(InputAction.CallbackContext context);
     }
 }

@@ -386,7 +386,7 @@ MonoBehaviour:
   m_CaretColor: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
   m_CustomCaretColor: 0
   m_SelectionColor: {r: 0.65882355, g: 0.80784315, b: 1, a: 0.7529412}
-  m_Text: https://ateixs.me/dracoSimple/
+  m_Text: https://10.1.5.1/dracoSimple/
   m_CaretBlinkRate: 0.85
   m_CaretWidth: 1
   m_ReadOnly: 0
@@ -2349,7 +2349,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1717954561962503726, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 1717954561962503726, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
       propertyPath: m_LocalPosition.y
@@ -2357,7 +2357,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1717954561962503726, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -3
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1717954561962503726, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
       propertyPath: m_LocalRotation.w
@@ -3220,7 +3220,7 @@ Transform:
   m_GameObject: {fileID: 1396584554}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -10.216631, y: -4.5929565, z: 12.779122}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3768,6 +3768,11 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1469696238}
   m_CullTransparentMesh: 1
+--- !u!1 &1480000086 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1717954561962503725, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
+  m_PrefabInstance: {fileID: 1098236125}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1522295194
 GameObject:
   m_ObjectHideFlags: 0
@@ -4189,7 +4194,7 @@ VisualEffect:
       - m_Value: 0.002
         m_Name: Scale
         m_Overridden: 1
-      - m_Value: 5
+      - m_Value: 3
         m_Name: ParticleSize
         m_Overridden: 1
     m_Vector2f:
@@ -4227,7 +4232,7 @@ Transform:
   m_GameObject: {fileID: 1630351988}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0.7071074, z: -0, w: -0.7071062}
-  m_LocalPosition: {x: -2.5000007, y: 0.00999999, z: -3.499997}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4542,9 +4547,9 @@ MonoBehaviour:
   m_HandleRect: {fileID: 1522295195}
   m_Direction: 0
   m_MinValue: 1
-  m_MaxValue: 10
+  m_MaxValue: 100
   m_WholeNumbers: 0
-  m_Value: 5
+  m_Value: 10
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls:
@@ -4920,7 +4925,7 @@ Transform:
   m_GameObject: {fileID: 1877910612}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0.7071074, z: -0, w: -0.7071062}
-  m_LocalPosition: {x: -2.5000007, y: 0, z: -3}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -4997,7 +5002,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "https://ateixs.me/dracoSimple/\u200B"
+  m_text: "https://10.1.5.1/dracoSimple/\u200B"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -5242,12 +5247,13 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   ReadMode: 0
-  RemoteHostPath: https://ateixs.me/dracoSimple/
+  RemoteHostPath: https://10.1.5.1/dracoSimple/
   ipHostPath: 10.1.5.1
   sliceAddressList:
   - 443
   - 5002
   - 5001
+  CheckSlicesTimestampEnabled: 0
   _changer: {fileID: 768327399}
   _TimestampThreshold: 1
   FPS: 33
@@ -5265,7 +5271,7 @@ Transform:
   m_GameObject: {fileID: 1379376652183382634}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0.70710653, z: -0, w: 0.70710707}
-  m_LocalPosition: {x: -3.0000005, y: 0, z: -2.9999964}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -5285,7 +5291,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   VFX: {fileID: 1630351990}
   particleScale: 0.002
-  particleSize: 5
+  particleSize: 10
+  particleDistanceCompensation: 4
+  distanceReference: {fileID: 1480000086}
 --- !u!114 &6798676864414862249
 MonoBehaviour:
   m_ObjectHideFlags: 0

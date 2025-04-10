@@ -14,7 +14,10 @@ public class DracoToParticles : MonoBehaviour {
     public VisualEffect VFX;
 
     public float particleScale = 1;
-    public float particleSize = 5;
+    public float particleSize = 1.7f;
+    public float particleDistanceCompensation = 1.7f;
+
+    public GameObject distanceReference;
 
     private Texture2D _positionMap;
     private Texture2D _colorMap;
@@ -28,10 +31,20 @@ public class DracoToParticles : MonoBehaviour {
         VFX.Play();
     }
 
+    public void Update()
+    {
+        particleDistanceCompensation = (Mathf.Pow(1 + distanceReference.transform.position.magnitude, 1.5f)) / 4;
+        ResetParticleSize( particleSize / particleDistanceCompensation);
+    }
+
     public void ChangeParticleSize(float newSize)
     {
         particleSize = newSize;
-        VFX.SetFloat("ParticleSize", newSize);
+    }
+
+    private void ResetParticleSize(float Size)
+    {
+        VFX.SetFloat("ParticleSize", Size);
     }
 
     public async Task Set(List<Vector3> vertices, List<Color32> colors)

@@ -12,8 +12,7 @@ public class TextCanvasScript : MonoBehaviour
 
     void Awake()
     {
-        //controls.XR.HideUI.performed += _ => HideUI();
-        //controls.XR.ShowUI.performed += _ => ShowUI();
+        controls.XR.EnableUI.performed += _ => SwitchUI();
     }
 
     void OnEnable()
@@ -25,7 +24,17 @@ public class TextCanvasScript : MonoBehaviour
     {
         //controls.Disable();
     }
-
+    void SwitchUI()
+    {
+        if (XRCanvas.activeInHierarchy)
+        {
+            HideUI();
+        }
+        else
+        {
+            ShowUI();
+        }
+    }
     void HideUI()
     {
         XRCanvas.SetActive(false);

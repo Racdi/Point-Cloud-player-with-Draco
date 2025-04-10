@@ -38,7 +38,8 @@ public class DracoWebRequest : MonoBehaviour
 
     private int currentSlice=0;
 
-    private bool CheckSlicesTimestampEnabled = true;
+    [SerializeField]
+    private bool CheckSlicesTimestampEnabled = false;
 
     [SerializeField]
     private SliceGraphicsChanger _changer;
@@ -311,9 +312,9 @@ public class DracoWebRequest : MonoBehaviour
     }
     private void CheckSliceTimestamp(int currentBuffer)
     {
-        Debug.Log("Current slice is: " + currentSlice);
+        //Debug.Log("Current slice is: " + currentSlice);
         float currentTimestamp = endBufferingTime[currentBuffer] - startBufferingTime[currentBuffer];
-        Debug.Log(currentTimestamp);
+        //Debug.Log(currentTimestamp);
         sliceTimestampList[currentSlice] = currentTimestamp;
 
         if (!CheckSlicesTimestampEnabled)
