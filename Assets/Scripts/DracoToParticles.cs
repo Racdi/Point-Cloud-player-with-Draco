@@ -17,6 +17,8 @@ public class DracoToParticles : MonoBehaviour {
     public float particleSize = 1.7f;
     public float particleDistanceCompensation = 1.7f;
 
+    private float currentDistance;
+
     public GameObject distanceReference;
 
     private Texture2D _positionMap;
@@ -33,8 +35,17 @@ public class DracoToParticles : MonoBehaviour {
 
     public void Update()
     {
-        particleDistanceCompensation = (Mathf.Pow(1 + distanceReference.transform.position.magnitude, 1.5f)) / 4;
-        ResetParticleSize( particleSize / particleDistanceCompensation);
+        currentDistance = distanceReference.transform.position.magnitude;
+        if(currentDistance > 0)
+        {
+            particleDistanceCompensation = (Mathf.Pow(currentDistance, 1.5f)) / 4;
+        }
+        else
+        {
+            particleDistanceCompensation = 0.25f;
+        }
+
+            ResetParticleSize(particleSize / particleDistanceCompensation);
     }
 
     public void ChangeParticleSize(float newSize)

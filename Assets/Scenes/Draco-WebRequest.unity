@@ -4546,10 +4546,10 @@ MonoBehaviour:
   m_FillRect: {fileID: 10704953}
   m_HandleRect: {fileID: 1522295195}
   m_Direction: 0
-  m_MinValue: 1
-  m_MaxValue: 100
+  m_MinValue: 0.1
+  m_MaxValue: 20
   m_WholeNumbers: 0
-  m_Value: 10
+  m_Value: 2
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls:
@@ -5291,7 +5291,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   VFX: {fileID: 1630351990}
   particleScale: 0.002
-  particleSize: 10
+  particleSize: 5
   particleDistanceCompensation: 4
   distanceReference: {fileID: 1480000086}
 --- !u!114 &6798676864414862249
