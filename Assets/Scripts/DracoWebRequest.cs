@@ -30,7 +30,7 @@ public class DracoWebRequest : MonoBehaviour
     public string ipHostPath;
     private string _http = "https://";
     private string _port = ":443";
-    private string _files = "/dracoSimple/";
+    private string _files = "/draco/";
 
     [SerializeField]
     private string[] sliceAddressList;
@@ -38,7 +38,7 @@ public class DracoWebRequest : MonoBehaviour
 
     private int currentSlice=0;
 
-    private bool CheckSlicesTimestampEnabled = true;
+    private bool CheckSlicesTimestampEnabled = false;
 
     [SerializeField]
     private SliceGraphicsChanger _changer;
