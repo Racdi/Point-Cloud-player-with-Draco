@@ -71,3 +71,6 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
+/Downloads
+Executables/demo_ticket_store.bin
+Executables/demo_token_store.bin
