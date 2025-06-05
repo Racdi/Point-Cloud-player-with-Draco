@@ -13,6 +13,8 @@ using PCP;
 using PCP.Utils;
 using Draco;
 using TMPro;
+using System.Runtime.InteropServices.ComTypes;
+using UnityEngine.UIElements;
 
 public class DracoQUIC : MonoBehaviour
 {
@@ -58,9 +60,17 @@ public class DracoQUIC : MonoBehaviour
     //[SerializeField]
     private int numberOfBuffers = 2;
     private Mesh[] buffer0, buffer1; //Stores the files as they are received, another array is used to play them
-    private bool isCurrentBuffer1 = false;
-    private bool bufferLoaded;
-    private bool playBufferReady;
+
+    private bool currentDownloadBuffer = false;
+    private bool currentReadBuffer = false;
+    private bool currentPlayBuffer = false;
+
+    private bool haltDownloading;
+    private bool filesReady0;
+    private bool filesReady1;
+    private bool readingFiles;
+    private bool playerReady;
+
     private int requestsCounter = 0;
 
     public int PlayIndex { get => playIndex; set => playIndex = value; }
@@ -80,8 +90,12 @@ public class DracoQUIC : MonoBehaviour
         {
             buffer1[i] = new Mesh();
         }
-        bufferLoaded = false;
-        playBufferReady = true;
+        requestsCounter = 0;
+        haltDownloading = false;
+        filesReady0 = false;
+        filesReady1 = false;
+        readingFiles = false;
+        playerReady = true;
         particlesScript = gameObject.GetComponent<DracoToParticles>();
 
         PlayIndex = 0;
@@ -186,10 +200,18 @@ public class DracoQUIC : MonoBehaviour
             counter.Tick();
             startTime = Time.realtimeSinceStartup;
         }
-        playBufferReady = true;
+        playerReady = true;
+        if (currentPlayBuffer == false)
+        {
+            filesReady0 = false;
+        }
+        else
+        {
+            filesReady1 = false;
+        }
         //Debug.Log("Finished playing buffer");
     }
-    
+    /*
     IEnumerator getRequest(string uri, System.Action<byte[], int> callbackOnFinish, int bufferIndex)
     {
 
@@ -214,7 +236,6 @@ public class DracoQUIC : MonoBehaviour
         }
         uwr.Dispose();
     }
-
     async void OnRequestComplete(byte[] stream, int bufferIndex)
     {
         // Async decoding has to start on the main thread and spawns multiple C# jobs.
@@ -249,7 +270,97 @@ public class DracoQUIC : MonoBehaviour
 
         }
     }
-    
+    */
+    public void IterateDownloadsCounter()
+    {
+        requestsCounter++;
+    }
+
+    async void FillBufferFromDisk(bool isBuffer1)
+    {
+        readingFiles = true;
+        if (!isBuffer1)
+        {
+            filesReady0 = false;
+            for (int bufferRun = 0; bufferRun < bufferSize; bufferRun++)
+            {
+                string fileName = "draco_" + (1000 +  bufferRun + PlayIndex) + ".drc";
+                byte[] stream = ReadStreamFromFile(fileName, null);
+
+                if (stream != null)
+                {
+                    var meshDataArray = Mesh.AllocateWritableMeshData(1);
+                    var result = await DracoDecoder.DecodeMesh(meshDataArray[0], stream);
+
+                    Mesh.ApplyAndDisposeWritableMeshData(meshDataArray, buffer0[bufferRun]);
+
+                }
+                else
+                {
+                    buffer0[bufferRun] = null;
+                }
+            }
+            filesReady0 = true;
+        }
+        else
+        {
+            filesReady1 = false;
+            for (int bufferRun = 0; bufferRun < bufferSize; bufferRun++)
+            {
+                string fileName = "draco_" + (1000 + bufferRun + PlayIndex) + ".drc";
+                byte[] stream = ReadStreamFromFile(fileName, null);
+
+                if(stream != null)
+                {
+                    var meshDataArray = Mesh.AllocateWritableMeshData(1);
+                    var result = await DracoDecoder.DecodeMesh(meshDataArray[0], stream);
+
+                    Mesh.ApplyAndDisposeWritableMeshData(meshDataArray, buffer1[bufferRun]);
+
+                }
+                else
+                {
+                    buffer1[bufferRun] = null;
+                }
+            }
+            filesReady1 = true;
+        }
+        PlayIndex += bufferSize;
+        haltDownloading = false;
+        Debug.Log(PlayIndex);
+        readingFiles = false;
+    }
+
+    byte[] ReadStreamFromFile(string fileName, string filePath)
+    {
+        byte[] buffer;
+        if(filePath == null)
+        {
+            filePath = Application.dataPath + "/../Downloads/";
+        }
+
+        if (File.Exists(filePath+fileName))
+        {
+            using (FileStream fileStream = File.OpenRead(filePath+fileName))
+            {
+                int length = (int)fileStream.Length;
+                buffer = new byte[length];
+                
+                // Set the stream position to the beginning of the file.
+                fileStream.Seek(0, SeekOrigin.Begin);
+
+                fileStream.Read(buffer, 0 , length);
+                
+            }
+            return buffer;
+        }
+        else
+        {
+            return null;
+        }
+        
+    }
+
     public void SetNewIP(string newIP)
     {
         HostPath = newIP;
@@ -356,64 +467,79 @@ public class DracoQUIC : MonoBehaviour
         {
             return;
         }
-        else
+
+        //Starts the requests to download files
+        if (haltDownloading == false)
         {
-            if (bufferLoaded == false)
+            //Debug.Log("Begin haltDownloading buffer");
+
+            haltDownloading = true;
+            if (PlayIndex >= dracoFiles.Length && isLoop)
             {
-                //Debug.Log("Begin downloading buffer");
-
-                bufferLoaded = true;
-                if (PlayIndex >= dracoFiles.Length && isLoop)
-                {
-                    PlayIndex = 0;
-                }
-                else if (!isLoop)
-                {
-                    return;
-                }
-
-                if (isCurrentBuffer1 == false)
-                {
-                    startBufferingTime[0] = Time.realtimeSinceStartup;
-                }
-                else
-                {
-                    startBufferingTime[1] = Time.realtimeSinceStartup;
-                }
-
-                for (int i = 0; i < bufferSize; i++)
-                {
-                    UnityEngine.Debug.Log("Calling app");
-                    string filepath = dracoFiles[i + PlayIndex];
-
-                    string appArgs = "-o " + Application.dataPath + "/../Downloads " + HostPath + " " + _port + " " + _files + filepath;
-
-                    appLauncher.StartProcess("picoquicdemo.exe", appArgs);
-                    //---------- start picoquic here ------------
-                    //StartCoroutine(getRequest(filepath, OnRequestComplete, i));
-                }
-                PlayIndex += bufferSize;
+                PlayIndex = 0;
             }
-            if (requestsCounter >= bufferSize && playBufferReady)
+            else if (!isLoop)
             {
-                //Debug.Log("Start playing buffer");
-                playBufferReady = false;
-
-                if (isCurrentBuffer1 == false)
-                {
-                    PlayBuffer(buffer0);
-                    isCurrentBuffer1 = true;
-                }
-                else
-                {
-                    PlayBuffer(buffer1);
-                    isCurrentBuffer1 = false;
-
-                }
-                requestsCounter = 0;
-                bufferLoaded = false;
-
+                return;
             }
+
+            for (int i = 0; i < bufferSize; i++)
+            {
+                string filepath = dracoFiles[i + PlayIndex];
+
+                string appArgs = "-o " + Application.dataPath + "/../Downloads " + HostPath + " " + _port + " " + _files + filepath;
+
+                appLauncher.StartProcess("picoquicdemo.exe", appArgs);
+                //---------- start picoquic here ------------
+                //StartCoroutine(getRequest(filepath, OnRequestComplete, i));
+            }
+        }
+
+        //Begin to read the downloaded files and insert into the buffers
+        if (requestsCounter >= bufferSize && !readingFiles)
+        {
+            requestsCounter = 0;
+
+            Debug.Log("All requests finished");
+            if (!currentDownloadBuffer && !filesReady0)
+            {
+                endBufferingTime[0] = Time.realtimeSinceStartup;
+                //CheckSliceTimestamp(0);
+                downloadTimerText.text = "Last download took " + ((endBufferingTime[0] - startBufferingTime[0]) * 1000).ToString("F0") + " ms";
+                Debug.Log("Begin filling buffer 0");
+                FillBufferFromDisk(false);
+                currentDownloadBuffer = true;
+            }
+            else if (currentDownloadBuffer && !filesReady1)
+            {
+                endBufferingTime[1] = Time.realtimeSinceStartup;
+                CheckSliceTimestamp(1);
+                downloadTimerText.text = "Last download took " + ((endBufferingTime[1] - startBufferingTime[1]) * 1000).ToString("F0") + " ms";
+                Debug.Log("Begin filling buffer 1");
+                FillBufferFromDisk(true);
+                currentDownloadBuffer = false;
+            }
+            
+        }
+
+        //Play the read files to the user
+        if (playerReady && (filesReady0 || filesReady1))
+        {
+            if (currentReadBuffer == false && filesReady0)
+            {
+                Debug.Log("Start playing buffer");
+                playerReady = false;
+                PlayBuffer(buffer0);
+                currentReadBuffer = true;
+            }
+            else if (currentReadBuffer && filesReady1)
+            {
+                Debug.Log("Start playing buffer");
+                playerReady = false;
+                PlayBuffer(buffer1);
+                currentReadBuffer = false;
+            }
+            haltDownloading = false;
 
         }
     }

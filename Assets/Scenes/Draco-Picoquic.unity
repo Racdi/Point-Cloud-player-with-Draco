@@ -5279,7 +5279,7 @@ MonoBehaviour:
   _changer: {fileID: 768327399}
   _TimestampThreshold: 1
   FPS: 30
-  bufferSize: 1
+  bufferSize: 30
   isLoop: 1
   monitor: {fileID: 6798676864414862249}
   counter: {fileID: 1587887723}
@@ -5297,6 +5297,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cd3a6899c7431924db0c76ab30566282, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  dracoQUIC: {fileID: 6798676864414862250}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
