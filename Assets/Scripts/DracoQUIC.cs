@@ -26,7 +26,7 @@ public class DracoQUIC : MonoBehaviour
     private string _files = "draco/";
 
     [SerializeField]
-    private string[] sliceAddressList;
+    private int[] sliceAddressList;
     private float[] sliceTimestampList;
 
     private int currentSlice = 0;
@@ -92,51 +92,6 @@ public class DracoQUIC : MonoBehaviour
         }
     }
     
-    private IEnumerator GetFilesFromHTTP(string url, Action<string[]> callback)
-    {
-        List<string> paths = new List<string>();
-        UnityWebRequest webRequest = UnityWebRequest.Get(url);
-        webRequest.certificateHandler = new BypassCertificateHandler();
-        yield return webRequest.SendWebRequest();
-
-        if (webRequest.result == UnityWebRequest.Result.Success)
-        {
-            using (StreamReader reader = new StreamReader(webRequest.downloadHandler.text.GenerateStream()))
-            {
-                string html = reader.ReadToEnd();
-                Regex regex = new Regex(GetDirectoryListingRegexForUrl());
-                MatchCollection matches = regex.Matches(html);
-                if (matches.Count > 0)
-                {
-                    foreach (Match match in matches)
-                    {
-                        if (match.Success)
-                        {
-                            string value = match.Groups["name"].Value;
-                            string path = Path.Combine(url, value);
-                            paths.Add(path);
-                            //Debug.Log(path);
-
-                        }
-                    }
-                }
-                else
-                {
-                    monitor.SetText("No matches found!");
-                }
-                callback(paths.ToArray());
-            }
-        }
-        else
-        {
-            monitor.SetText("Web request failed\nURL is:" + url);
-        }
-    }
-    
-    public static string GetDirectoryListingRegexForUrl()
-    {
-        return "<a href=\"(?<name>.+drc)\">.+drc</a>";
-    }
 
     async Task PlaySingleFile(Mesh currentFile)
     {
@@ -165,78 +120,6 @@ public class DracoQUIC : MonoBehaviour
         playerReady = true;
     }
 
-
-    /*
-    IEnumerator getRequest(string uri, System.Action<byte[], int> callbackOnFinish, int bufferIndex)
-    {
-
-        UnityWebRequest uwr = UnityWebRequest.Get(uri);
-        uwr.certificateHandler = new BypassCertificateHandler();
-        uwr.downloadHandler = new DownloadHandlerBuffer();
-        yield return uwr.SendWebRequest();
-
-        if (uwr.result == UnityWebRequest.Result.ConnectionError)
-        {
-            UnityEngine.Debug.Log("Error While Sending: " + uwr.error);
-            if (monitor != null)
-            {
-                monitor.SetText("Web Request error: " + uwr.error);
-            }
-        }
-        else
-        {
-            //Debug.Log("Loading frame number:" + bufferIndex + " URI is: " + uri);
-            byte[] results = uwr.downloadHandler.data;
-            callbackOnFinish(results, bufferIndex);
-        }
-        uwr.Dispose();
-    }
-    async void OnRequestComplete(byte[] stream, int bufferIndex)
-    {
-        // Async decoding has to start on the main thread and spawns multiple C# jobs.
-        var meshDataArray = Mesh.AllocateWritableMeshData(1);
-        var result = await DracoDecoder.DecodeMesh(meshDataArray[0], stream);
-        if (isCurrentBuffer1 == false)
-        {
-            Mesh.ApplyAndDisposeWritableMeshData(meshDataArray, buffer0[bufferIndex]);
-        }
-        else
-        {
-            Mesh.ApplyAndDisposeWritableMeshData(meshDataArray, buffer1[bufferIndex]);
-        }
-        requestsCounter = requestsCounter + 1;
-
-        //Check if all requests are completed for timestamping
-
-        if (requestsCounter >= bufferSize)
-        {
-            if (isCurrentBuffer1 == false)
-            {
-                endBufferingTime[0] = Time.realtimeSinceStartup;
-                //CheckSliceTimestamp(0);
-                downloadTimerText.text = "Last download took " + ((endBufferingTime[0] - startBufferingTime[0]) * 1000).ToString("F0") + " ms";
-            }
-            else
-            {
-                endBufferingTime[1] = Time.realtimeSinceStartup;
-                CheckSliceTimestamp(1);
-                downloadTimerText.text = "Last download took " + ((endBufferingTime[1] - startBufferingTime[1]) * 1000).ToString("F0") + " ms";
-            }
-
-        }
-    }
-    */
-    /*
-    public void IterateDownloadsCounter()
-    {
-        requestsCounter++;
-    }
-
-    public void IterateDownloadCounters(int counters)
-    {
-        requestsCounter += counters;
-    }
-    */
 
     async void ReadMeshFromFile(string fileName)
     {
@@ -269,62 +152,7 @@ public class DracoQUIC : MonoBehaviour
         ReadMeshFromFile(fileName);
 
     }
-        /*
-    async void FillBufferFromDisk(bool isBuffer1)
-    {
-        readingFiles = true;
-        if (!isBuffer1)
-        {
-            filesReady0 = false;
-            for (int bufferRun = 0; bufferRun < bufferSize; bufferRun++)
-            {
-                string fileName = "draco_" + (1000 +  bufferRun + PlayIndex) + ".drc";
-                byte[] stream = ReadStreamFromFile(fileName, null);
-
-                if (stream != null)
-                {
-                    var meshDataArray = Mesh.AllocateWritableMeshData(1);
-                    var result = await DracoDecoder.DecodeMesh(meshDataArray[0], stream);
-
-                    Mesh.ApplyAndDisposeWritableMeshData(meshDataArray, buffer0[bufferRun]);
-
-                }
-                else
-                {
-                    buffer0[bufferRun] = null;
-                }
-            }
-            filesReady0 = true;
-        }
-        else
-        {
-            filesReady1 = false;
-            for (int bufferRun = 0; bufferRun < bufferSize; bufferRun++)
-            {
-                string fileName = "draco_" + (1000 + bufferRun + PlayIndex) + ".drc";
-                byte[] stream = ReadStreamFromFile(fileName, null);
-
-                if(stream != null)
-                {
-                    var meshDataArray = Mesh.AllocateWritableMeshData(1);
-                    var result = await DracoDecoder.DecodeMesh(meshDataArray[0], stream);
-
-                    Mesh.ApplyAndDisposeWritableMeshData(meshDataArray, buffer1[bufferRun]);
-
-                }
-                else
-                {
-                    buffer1[bufferRun] = null;
-                }
-            }
-            filesReady1 = true;
-        }
-        PlayIndex += bufferSize;
-        haltDownloading = false;
-        Debug.Log(PlayIndex);
-        readingFiles = false;
-    }
-        */
+        
     byte[] ReadStreamFromFile(string fileName, string filePath)
     {
         byte[] buffer;
@@ -371,7 +199,7 @@ public class DracoQUIC : MonoBehaviour
     public void SetPortFromSliceList(int slice)
     {
         currentSlice = slice;
-        _port = sliceAddressList[currentSlice];
+        _port = sliceAddressList[currentSlice].ToString();
         ResetHostPath();
         _changer.ChangeSlice(currentSlice);
     }
@@ -469,7 +297,8 @@ public class DracoQUIC : MonoBehaviour
             //Debug.Log("Begin haltDownloading buffer");
 
             haltDownloading = true;
-            
+            optimizedDownloader.SetHostAndPort(HostPath, sliceAddressList[currentSlice]);
+            optimizedDownloader.SetIndexes(1000, 1299);
             optimizedDownloader.StartBulkDownload();
             
             /*

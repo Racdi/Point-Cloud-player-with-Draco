@@ -112,7 +112,17 @@ public class OptimizedQUICDownloader : MonoBehaviour
         
         return scenario.ToString().TrimEnd(';'); // Remove trailing semicolon
     }
-    
+    public void SetHostAndPort(string newHostname, int newPort)
+    {
+        serverHost = newHostname;
+        serverPort = newPort;
+    }
+
+    public void SetIndexes(int newStartIndex, int newEndIndex)
+    {
+        startIndex = newStartIndex;
+        endIndex = newEndIndex;
+    }
     private IEnumerator ExecuteBulkDownload()
     {
         isDownloading = true;
@@ -366,7 +376,7 @@ public class OptimizedQUICDownloader : MonoBehaviour
 
             float percentage = Progress * 100f;
 
-            UnityEngine.Debug.Log("Sending an Invoke for files: " + completedFiles);
+            //UnityEngine.Debug.Log("Sending an Invoke for files: " + completedFiles);
             OnProgressUpdate?.Invoke(completedFiles, totalFiles, percentage);
 
             UnityEngine.Debug.Log($"Progress: {completedFiles}/{totalFiles} files ({percentage:F1}%) - " +

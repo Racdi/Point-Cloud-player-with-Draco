@@ -156,7 +156,7 @@ RectTransform:
   m_Father: {fileID: 546379658}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMax: {x: 0.44444445, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 10, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -1844,7 +1844,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &768327398
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3453,7 +3453,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1455500639
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3788,8 +3788,8 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 356291758}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMin: {x: 0.44444445, y: 0}
+  m_AnchorMax: {x: 0.44444445, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 20, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -3849,7 +3849,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1587887719
 RectTransform:
   m_ObjectHideFlags: 0
@@ -4462,7 +4462,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1752200387
 RectTransform:
   m_ObjectHideFlags: 0
@@ -4700,7 +4700,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1767545691
 RectTransform:
   m_ObjectHideFlags: 0
@@ -5272,10 +5272,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   fullPath: https://ateixs.me/draco/
   HostPath: ateixs.me
-  sliceAddressList:
-  - 443
-  - 5002
-  - 5001
+  sliceAddressList: bb0100008a13000089130000
   _changer: {fileID: 768327399}
   _TimestampThreshold: 1
   FPS: 30
