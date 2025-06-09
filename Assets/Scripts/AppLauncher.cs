@@ -46,12 +46,12 @@ public class AppLauncher : MonoBehaviour
         if (eventArgs.Data.ToString() == "Client exit with code = 0")
         {
             UnityEngine.Debug.Log("File successfully downloaded");
-            dracoQUIC.IterateDownloadsCounter();
+            //dracoQUIC.IterateDownloadsCounter();
         }
         else if (eventArgs.Data.ToString() == "Client exit with code = -1")
         {
             UnityEngine.Debug.Log("File NOT successfully downloaded");
-            dracoQUIC.IterateDownloadsCounter();
+            //dracoQUIC.IterateDownloadsCounter();
         }
     }
 

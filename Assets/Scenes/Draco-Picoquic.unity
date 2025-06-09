@@ -5207,7 +5207,7 @@ GameObject:
   - component: {fileID: 6798676864414862250}
   - component: {fileID: 6798676864414862248}
   - component: {fileID: 6798676864414862249}
-  - component: {fileID: 6798676864414862251}
+  - component: {fileID: 6798676864414862252}
   m_Layer: 0
   m_Name: DracoPlayer
   m_TagString: Untagged
@@ -5279,13 +5279,12 @@ MonoBehaviour:
   _changer: {fileID: 768327399}
   _TimestampThreshold: 1
   FPS: 30
-  bufferSize: 30
   isLoop: 1
   monitor: {fileID: 6798676864414862249}
   counter: {fileID: 1587887723}
   downloadTimerText: {fileID: 1767545693}
-  appLauncher: {fileID: 6798676864414862251}
---- !u!114 &6798676864414862251
+  optimizedDownloader: {fileID: 6798676864414862252}
+--- !u!114 &6798676864414862252
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -5294,10 +5293,38 @@ MonoBehaviour:
   m_GameObject: {fileID: 1379376652183382634}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cd3a6899c7431924db0c76ab30566282, type: 3}
+  m_Script: {fileID: 11500000, guid: 59b9869281b20964ca5cf71c4abd8d56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  dracoQUIC: {fileID: 6798676864414862250}
+  serverHost: ateixs.me
+  serverPort: 443
+  filePattern: draco/{0:D4}.drc
+  startIndex: 1000
+  endIndex: 1299
+  outputDirectory: Downloads
+  maxConcurrentStreams: 10
+  batchSize: 15
+  OnProgressUpdate:
+    m_PersistentCalls:
+      m_Calls: []
+  OnDownloadComplete:
+    m_PersistentCalls:
+      m_Calls: []
+  OnFileDownloaded:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 6798676864414862250}
+        m_TargetAssemblyTypeName: DracoQUIC, Assembly-CSharp
+        m_MethodName: ReceiveRequestToReadFile
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
