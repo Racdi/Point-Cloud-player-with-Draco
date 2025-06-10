@@ -17,7 +17,7 @@ using System.Runtime.InteropServices.ComTypes;
 using UnityEngine.UIElements;
 using System.Linq;
 
-public class DracoPicoQuic : MonoBehaviour
+public class DracoCurl : MonoBehaviour
 {
     public string fullPath;
     public string HostPath;
@@ -27,49 +27,54 @@ public class DracoPicoQuic : MonoBehaviour
 
     [SerializeField]
     private int[] sliceAddressList;
-    private float[] sliceTimestampList;
+    //private float[] sliceTimestampList;
 
     private int currentSlice = 0;
 
-    private bool CheckSlicesTimestampEnabled = false;
+    //private bool CheckSlicesTimestampEnabled = false;
 
-    [SerializeField]
-    private SliceGraphicsChanger _changer;
+    //[SerializeField]
+    //private SliceGraphicsChanger _changer;
 
-    [SerializeField]
-    private float _TimestampThreshold = 1.0f;
+    //[SerializeField]
+    //private float _TimestampThreshold = 1.0f;
 
     public float FPS = 30;
     private float inverseFPS;
     public bool isLoop = true;
 
+    public int batchSize = 30;
+
     private int playIndex, lastPlayedIndex;
     private string[] dracoFiles;
 
-    public StatusMonitor monitor;
-    public AnimationFPSCounter counter;
-    public TextMeshProUGUI downloadTimerText;
+    //public StatusMonitor monitor;
+    //public AnimationFPSCounter counter;
+    //public TextMeshProUGUI downloadTimerText;
 
-    public OptimizedQUICDownloader optimizedDownloader;
+    public AppLauncher appLauncher;
 
     private Queue<Mesh> LoadedMeshes;
+    private Mesh currentMesh;
 
     private bool haltDownloading = true;
+    private bool advanceBatch = false;
     private bool readingFiles = false;
     private bool playerReady = true;
 
 
     public int PlayIndex { get => playIndex; set => playIndex = value; }
 
-    private DracoToParticles particlesScript;
+    public DracoToParticles particlesScript;
 
     private void OnEnable()
     {
-        sliceTimestampList = new float[sliceAddressList.Count()];
+        //sliceTimestampList = new float[sliceAddressList.Count()];
         LoadedMeshes = new Queue<Mesh>();
         PlayIndex = 0;
         inverseFPS = 1000 / FPS;
-        ResetTimestamps();
+        currentMesh = new Mesh();
+        //ResetTimestamps();
     }
 
     void UpdateDracoFiles()
@@ -93,12 +98,12 @@ public class DracoPicoQuic : MonoBehaviour
     }
     
 
-    async Task PlaySingleFile(Mesh currentFile)
-    {
+    async Task PlaySingleFile()
+    {        
         playerReady = false;
         float startTime = Time.realtimeSinceStartup;
+        particlesScript.Set(currentMesh);
         
-        particlesScript.Set(currentFile);
 
         float elapsedS = Time.realtimeSinceStartup - startTime;
         float elapsedMS = elapsedS * 1000;
@@ -114,32 +119,28 @@ public class DracoPicoQuic : MonoBehaviour
         {
             await Task.Delay(1);
         }
-        counter.Tick();
+        //counter.Tick();
         startTime = Time.realtimeSinceStartup;
 
+       
         playerReady = true;
     }
 
 
-    async void ReadMeshFromFile(string fileName)
+    async void ReadMeshFromFile(string fileName, Mesh.MeshDataArray meshDataArray)
     {
-        Debug.Log("Begin reading from file");
-        readingFiles = true;
-
-        byte[] stream = ReadStreamFromFile(fileName, null);
+        byte[] stream = ReadStreamFromDownloadedFile(fileName, "C:/Users/Rafael/AppData/LocalLow/Smartness/Draco-RTC/Downloads/");
 
         if (stream != null)
         {
-            var meshDataArray = Mesh.AllocateWritableMeshData(1);
             await DracoDecoder.DecodeMesh(meshDataArray[0], stream);
-
+            
             Mesh tempMesh = new Mesh();
 
             Mesh.ApplyAndDisposeWritableMeshData(meshDataArray, tempMesh);
 
             LoadedMeshes.Enqueue(tempMesh);
         }
-        readingFiles = false;
     }
     public async void ReceiveRequestToReadFile(string fileName)
     {
@@ -148,19 +149,20 @@ public class DracoPicoQuic : MonoBehaviour
         {
             await Task.Delay(1);
         }
-        
-        ReadMeshFromFile(fileName);
+
+        var meshDataArray = Mesh.AllocateWritableMeshData(1);
+        ReadMeshFromFile(fileName, meshDataArray);
 
     }
-        
-    byte[] ReadStreamFromFile(string fileName, string filePath)
+
+
+    byte[] ReadStreamFromDownloadedFile(string fileName, string filePath)
     {
         byte[] buffer;
-        if(filePath == null)
+        if (filePath == null)
         {
             filePath = Application.persistentDataPath + "/Downloads/";
         }
-
         if (File.Exists(filePath+fileName))
         {
             using (FileStream fileStream = File.OpenRead(filePath+fileName))
@@ -201,12 +203,12 @@ public class DracoPicoQuic : MonoBehaviour
         currentSlice = slice;
         _port = sliceAddressList[currentSlice].ToString();
         ResetHostPath();
-        _changer.ChangeSlice(currentSlice);
+        //_changer.ChangeSlice(currentSlice);
     }
 
     private void ResetHostPath()
     {
-        fullPath = _http + HostPath + _port + _files;
+        fullPath = _http + HostPath + ":" + _port + "/" + _files;
         //UpdateDracoFiles();
     }
 
@@ -225,9 +227,10 @@ public class DracoPicoQuic : MonoBehaviour
     }
     public void SwitchCheckTimestampsFunction()
     {
-        CheckSlicesTimestampEnabled = !CheckSlicesTimestampEnabled;
+        //CheckSlicesTimestampEnabled = !CheckSlicesTimestampEnabled;
     }
 
+    /*
     public void ResetTimestamps()
     {
         for (int i = 0; i < sliceTimestampList.Length; i++)
@@ -235,55 +238,15 @@ public class DracoPicoQuic : MonoBehaviour
             sliceTimestampList[i] = -1;
         }
     }
-    /*
-    private void CheckSliceTimestamp(int currentBuffer)
-    {
-        UnityEngine.Debug.Log("Current slice is: " + currentSlice);
-        float currentTimestamp = endBufferingTime[currentBuffer] - startBufferingTime[currentBuffer];
-        UnityEngine.Debug.Log(currentTimestamp);
-        sliceTimestampList[currentSlice] = currentTimestamp;
-
-        if (!CheckSlicesTimestampEnabled)
-        {
-            return;
-        }
-
-        if (currentTimestamp < _TimestampThreshold)
-        {
-            UnityEngine.Debug.Log("Timestamp is fine");
-        }
-        else
-        {
-            UnityEngine.Debug.Log("Timestamp NOT FINE!");
-
-            int checkedSlices = 0;
-            while (checkedSlices < sliceAddressList.Length)
-            {
-                if (sliceTimestampList[checkedSlices] < _TimestampThreshold)
-                {
-                    SetPortFromSliceList(checkedSlices);
-                    UpdateDracoFiles();
-                    return;
-                }
-
-                checkedSlices++;
-            }
-            checkedSlices = 0;
-            while (checkedSlices < sliceAddressList.Length)
-            {
-                if (sliceTimestampList[checkedSlices] < sliceTimestampList[currentSlice])
-                {
-                    SetPortFromSliceList(checkedSlices);
-                    UpdateDracoFiles();
-                    return;
-                }
-                checkedSlices++;
-            }
-
-        }
-
-    }
     */
+
+    public void AdvanceBatch()
+    {
+        advanceBatch = true;
+    }
+
+    
+
     private void Update()
     {
         if (dracoFiles == null)
@@ -292,15 +255,22 @@ public class DracoPicoQuic : MonoBehaviour
         }
 
         //Starts the requests to download files
-        if (haltDownloading == false)
+        if (haltDownloading == false && LoadedMeshes.Count < 30)
         {
             //Debug.Log("Begin haltDownloading buffer");
 
             haltDownloading = true;
-            optimizedDownloader.SetHostAndPort(HostPath, sliceAddressList[currentSlice]);
-            optimizedDownloader.SetIndexes(1000, 1299);
-            optimizedDownloader.StartBulkDownload();
-            
+            string appArgs = "--http3 --parallel";
+            for (int i = 0; i < batchSize; i++ )
+            {
+                string filepath = dracoFiles[i + PlayIndex];
+
+                 appArgs += " -o " + Application.persistentDataPath + "/Downloads/" + filepath + " " + fullPath + "/" + filepath;
+
+                //Debug.Log(appArgs);
+            }
+
+            appLauncher.StartProcess("curl.exe", appArgs);
             /*
             if (PlayIndex >= dracoFiles.Length && isLoop)
             {
@@ -326,12 +296,28 @@ public class DracoPicoQuic : MonoBehaviour
             */
         }
 
-
+        if (advanceBatch)
+        {
+            for (int i = playIndex; i < playIndex + batchSize; i++)
+            {
+                var meshDataArray = Mesh.AllocateWritableMeshData(1);
+                ReadMeshFromFile(dracoFiles[i], meshDataArray);
+            }
+            playIndex += batchSize;
+            if (playIndex >= dracoFiles.Length && isLoop)
+            {
+                playIndex = 0;
+            }
+            haltDownloading = false;
+            advanceBatch = false;
+        }
         //Play the read files to the user
         if (playerReady && LoadedMeshes.Count > 0)
         {
-            Debug.Log("Start playing");
-            PlaySingleFile(LoadedMeshes.Dequeue());
+            LoadedMeshes.TryDequeue(out currentMesh);
+            Debug.Log(LoadedMeshes.Count);
+            //tempMesh.SetVertices(LoadedMeshes.Peek().vertices);
+            PlaySingleFile();
 
         }
     }

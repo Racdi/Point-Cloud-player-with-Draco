@@ -10,7 +10,9 @@ public class AppLauncher : MonoBehaviour
     Process process = null;
     StreamWriter messageStream;
 
-    public DracoQUIC dracoQUIC;
+    public DracoCurl DracoCurl;
+    //public UnityEngine.Events.UnityEvent<string> onDataReceived;
+    //public DracoQUIC dracoQUIC;
     public void StartProcess(string AppName, string AppArgs)
     {
         try
@@ -42,17 +44,9 @@ public class AppLauncher : MonoBehaviour
     void DataReceived(object sender, DataReceivedEventArgs eventArgs)
     {
         // Handle it
-        //UnityEngine.Debug.Log("Received data:" +  eventArgs.Data);
-        if (eventArgs.Data.ToString() == "Client exit with code = 0")
-        {
-            UnityEngine.Debug.Log("File successfully downloaded");
-            //dracoQUIC.IterateDownloadsCounter();
-        }
-        else if (eventArgs.Data.ToString() == "Client exit with code = -1")
-        {
-            UnityEngine.Debug.Log("File NOT successfully downloaded");
-            //dracoQUIC.IterateDownloadsCounter();
-        }
+        UnityEngine.Debug.Log(eventArgs.Data);
+        //onDataReceived?.Invoke(eventArgs.Data);
+        DracoCurl.AdvanceBatch();
     }
 
 
@@ -67,6 +61,11 @@ public class AppLauncher : MonoBehaviour
         {
             process.Kill();
         }
+    }
+
+    private void OnDestroy()
+    {
+        KillProcess();
     }
 }
 
