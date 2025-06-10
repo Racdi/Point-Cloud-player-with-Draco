@@ -16,6 +16,7 @@ using TMPro;
 using System.Runtime.InteropServices.ComTypes;
 using UnityEngine.UIElements;
 using System.Linq;
+using Unity.VisualScripting;
 
 public class DracoCurl : MonoBehaviour
 {
@@ -45,7 +46,7 @@ public class DracoCurl : MonoBehaviour
 
     public int batchSize = 30;
 
-    private int playIndex, lastPlayedIndex;
+    private int playIndex, currentPosition;
     private string[] dracoFiles;
 
     //public StatusMonitor monitor;
@@ -54,12 +55,12 @@ public class DracoCurl : MonoBehaviour
 
     public AppLauncher appLauncher;
 
-    private Queue<Mesh> LoadedMeshes;
+    private Queue<Mesh> loadedMeshes;
     private Mesh currentMesh;
 
     private bool haltDownloading = true;
     private bool advanceBatch = false;
-    private bool readingFiles = false;
+    private bool isReading = false;
     private bool playerReady = true;
 
 
@@ -70,8 +71,9 @@ public class DracoCurl : MonoBehaviour
     private void OnEnable()
     {
         //sliceTimestampList = new float[sliceAddressList.Count()];
-        LoadedMeshes = new Queue<Mesh>();
+        loadedMeshes = new Queue<Mesh>();
         PlayIndex = 0;
+        currentPosition = -1;
         inverseFPS = 1000 / FPS;
         currentMesh = new Mesh();
         //ResetTimestamps();
@@ -98,7 +100,7 @@ public class DracoCurl : MonoBehaviour
     }
     
 
-    async Task PlaySingleFile()
+    async void PlaySingleFile()
     {        
         playerReady = false;
         float startTime = Time.realtimeSinceStartup;
@@ -127,34 +129,43 @@ public class DracoCurl : MonoBehaviour
     }
 
 
-    async void ReadMeshFromFile(string fileName, Mesh.MeshDataArray meshDataArray)
+    async void ReadMeshFromFile(string fileName, Mesh.MeshDataArray meshDataArray, int position)
     {
+        isReading = true;
         byte[] stream = ReadStreamFromDownloadedFile(fileName, "C:/Users/Rafael/AppData/LocalLow/Smartness/Draco-RTC/Downloads/");
 
         if (stream != null)
         {
             await DracoDecoder.DecodeMesh(meshDataArray[0], stream);
+
+            stream = null;
             
             Mesh tempMesh = new Mesh();
 
             Mesh.ApplyAndDisposeWritableMeshData(meshDataArray, tempMesh);
+            while (position != currentPosition + 1)
+            {
+                await Task.Delay(1);
+            }
 
-            LoadedMeshes.Enqueue(tempMesh);
+            if (position == dracoFiles.Length - 1)
+            {
+                currentPosition = -1;
+            }
+            else
+            {
+                currentPosition = position;
+            }
+            
+            Debug.Log("Current file is: " + fileName);
+            loadedMeshes.Enqueue(tempMesh);
         }
-    }
-    public async void ReceiveRequestToReadFile(string fileName)
-    {
-        Debug.Log("Request to read file received");
-        while (readingFiles)
+
+        if(position == playIndex - 1 || position == dracoFiles.Length - 1)
         {
-            await Task.Delay(1);
+            isReading = false;
         }
-
-        var meshDataArray = Mesh.AllocateWritableMeshData(1);
-        ReadMeshFromFile(fileName, meshDataArray);
-
     }
-
 
     byte[] ReadStreamFromDownloadedFile(string fileName, string filePath)
     {
@@ -182,7 +193,6 @@ public class DracoCurl : MonoBehaviour
         {
             return null;
         }
-        
     }
 
     public void SetNewIP(string newIP)
@@ -255,10 +265,8 @@ public class DracoCurl : MonoBehaviour
         }
 
         //Starts the requests to download files
-        if (haltDownloading == false && LoadedMeshes.Count < 30)
+        if (haltDownloading == false && isReading == false && loadedMeshes.Count < batchSize)
         {
-            //Debug.Log("Begin haltDownloading buffer");
-
             haltDownloading = true;
             string appArgs = "--http3 --parallel";
             for (int i = 0; i < batchSize; i++ )
@@ -271,37 +279,16 @@ public class DracoCurl : MonoBehaviour
             }
 
             appLauncher.StartProcess("curl.exe", appArgs);
-            /*
-            if (PlayIndex >= dracoFiles.Length && isLoop)
-            {
-                PlayIndex = 0;
-            }
-            else if (!isLoop)
-            {
-                return;
-            }
 
-            for (int i = 0; i < bufferSize; i++)
-            {
-                string filepath = dracoFiles[i + PlayIndex];
-
-                string appArgs = "-o " + Application.dataPath + "/../Downloads " + HostPath + " " + _port + " " + _files + filepath;
-
-                
-
-                //appLauncher.StartProcess("picoquicdemo.exe", appArgs);
-                //---------- start picoquic here ------------
-                //StartCoroutine(getRequest(filepath, OnRequestComplete, i));
-            }
-            */
         }
 
-        if (advanceBatch)
+        else if (advanceBatch)
         {
             for (int i = playIndex; i < playIndex + batchSize; i++)
             {
                 var meshDataArray = Mesh.AllocateWritableMeshData(1);
-                ReadMeshFromFile(dracoFiles[i], meshDataArray);
+                Debug.Log("Reading mesh " + i);
+                ReadMeshFromFile(dracoFiles[i], meshDataArray, i);
             }
             playIndex += batchSize;
             if (playIndex >= dracoFiles.Length && isLoop)
@@ -312,13 +299,10 @@ public class DracoCurl : MonoBehaviour
             advanceBatch = false;
         }
         //Play the read files to the user
-        if (playerReady && LoadedMeshes.Count > 0)
+        if (playerReady && loadedMeshes.Count > 0)
         {
-            LoadedMeshes.TryDequeue(out currentMesh);
-            Debug.Log(LoadedMeshes.Count);
-            //tempMesh.SetVertices(LoadedMeshes.Peek().vertices);
+            loadedMeshes.TryDequeue(out currentMesh);
             PlaySingleFile();
-
         }
     }
 }

@@ -32,7 +32,7 @@ public class AppLauncher : MonoBehaviour
             process.BeginOutputReadLine();
             messageStream = process.StandardInput;
 
-            UnityEngine.Debug.Log("Successfully launched app");
+            //UnityEngine.Debug.Log("Successfully launched app");
         }
         catch (Exception e)
         {
@@ -44,7 +44,7 @@ public class AppLauncher : MonoBehaviour
     void DataReceived(object sender, DataReceivedEventArgs eventArgs)
     {
         // Handle it
-        UnityEngine.Debug.Log(eventArgs.Data);
+        //UnityEngine.Debug.Log(eventArgs.Data);
         //onDataReceived?.Invoke(eventArgs.Data);
         DracoCurl.AdvanceBatch();
     }
