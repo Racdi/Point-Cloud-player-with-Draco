@@ -137,7 +137,7 @@ public class DracoCurl : MonoBehaviour
                 await Task.Delay(1);
             }
 
-            Debug.Log("Current file is: " + fileName);
+            //Debug.Log("Current file is: " + fileName);
             loadedMeshes.Enqueue(tempMesh);
         }
         else

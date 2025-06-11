@@ -2,6 +2,7 @@ using UnityEngine;
 using System;
 using System.IO;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 
 
@@ -13,8 +14,12 @@ public class AppLauncher : MonoBehaviour
     public DracoCurl DracoCurl;
     //public UnityEngine.Events.UnityEvent<string> onDataReceived;
     //public DracoQUIC dracoQUIC;
-    public void StartProcess(string AppName, string AppArgs)
+    public async void StartProcess(string AppName, string AppArgs)
     {
+        while (process != null && !process.HasExited)
+        {
+            await Task.Delay(1);
+        }
         try
         {
             process = new Process();
