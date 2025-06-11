@@ -4,20 +4,8 @@ using UnityEngine;
 using System.Threading.Tasks;
 using System.IO;
 using System;
-using System.Net;
-using System.Text;
-using System.Text.RegularExpressions;
 using UnityEngine.Networking;
-using UnityEngine.Events;
-using PCP;
-using PCP.Utils;
 using Draco;
-using TMPro;
-using System.Runtime.InteropServices.ComTypes;
-using UnityEngine.UIElements;
-using System.Linq;
-using Unity.VisualScripting;
-using UnityEngine.Scripting;
 
 public class DracoCurl : MonoBehaviour
 {
@@ -89,8 +77,6 @@ public class DracoCurl : MonoBehaviour
         {
             dracoFiles[i] = (1000 + i) + ".drc";
         }
-
-        haltDownloading = false;
     }
     public class BypassCertificateHandler : CertificateHandler
     {
@@ -130,13 +116,15 @@ public class DracoCurl : MonoBehaviour
     }
 
 
-    async void ReadMeshFromFile(string fileName, Mesh.MeshDataArray meshDataArray, int position)
+    async void ReadMeshFromFile(string fileName, int position)
     {
         isReading = true;
-        byte[] stream = ReadStreamFromDownloadedFile(fileName, "C:/Users/Rafael/AppData/LocalLow/Smartness/Draco-RTC/Downloads/");
+        byte[] stream = ReadStreamFromDownloadedFile(fileName, Application.persistentDataPath + "/Downloads/");
 
         if (stream != null)
         {
+            var meshDataArray = Mesh.AllocateWritableMeshData(1);
+         
             await DracoDecoder.DecodeMesh(meshDataArray[0], stream);
 
             stream = null;
@@ -173,28 +161,25 @@ public class DracoCurl : MonoBehaviour
 
     byte[] ReadStreamFromDownloadedFile(string fileName, string filePath)
     {
-        byte[] buffer;
         if (filePath == null)
         {
             filePath = Application.persistentDataPath + "/Downloads/";
         }
-        if (File.Exists(filePath+fileName))
+        if (File.Exists(filePath + fileName))
         {
-            using (FileStream fileStream = File.OpenRead(filePath+fileName))
+            try
             {
-                int length = (int)fileStream.Length;
-                buffer = new byte[length];
-                
-                // Set the stream position to the beginning of the file.
-                fileStream.Seek(0, SeekOrigin.Begin);
-
-                fileStream.Read(buffer, 0 , length);
-                
+                return File.ReadAllBytes(filePath + fileName);
             }
-            return buffer;
+            catch (Exception ex)
+            {
+                Debug.LogError($"Error reading file {filePath + fileName}: {ex.Message}");
+                return null;
+            }
         }
         else
         {
+            Debug.LogWarning($"File not found: {filePath + fileName}");
             return null;
         }
     }
@@ -229,6 +214,10 @@ public class DracoCurl : MonoBehaviour
     public void Reconnect()
     {
         UpdateDracoFiles();
+
+        appLauncher.KillProcess();
+
+        haltDownloading = false;
     }
 
     public void ChangeFramerate(string newFramerate)
@@ -290,9 +279,8 @@ public class DracoCurl : MonoBehaviour
         {
             for (int i = playIndex; i < playIndex + batchSize; i++)
             {
-                var meshDataArray = Mesh.AllocateWritableMeshData(1);
-                Debug.Log("Reading mesh " + i);
-                ReadMeshFromFile(dracoFiles[i], meshDataArray, i);
+                //Debug.Log("Reading mesh " + i);
+                ReadMeshFromFile(dracoFiles[i], i);
             }
             playIndex += batchSize;
             if (playIndex >= dracoFiles.Length && isLoop)

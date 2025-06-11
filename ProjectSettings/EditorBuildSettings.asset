@@ -8,12 +8,15 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Scenes/PointCloudPlayer.unity
     guid: 1edce59e579b92941a6fc6a3f74aa5e1
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/Draco-WebRequest.unity
     guid: 358129a54d12f90478bbe648d9529779
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/Draco-RTC.unity
     guid: d22b52d60085fbc4a85a78784df82bb9
+  - enabled: 1
+    path: Assets/Scenes/Draco-Curl.unity
+    guid: 6e5d851c6c2d6694eae7abe4f99d7352
   m_configObjects:
     Unity.XR.Oculus.Settings: {fileID: 11400000, guid: 081d990438843bd4f9bc8f2d859640c3, type: 2}
     com.unity.input.settings: {fileID: 11400000, guid: 8d102c058ef07a844b57da0788a3480b, type: 2}

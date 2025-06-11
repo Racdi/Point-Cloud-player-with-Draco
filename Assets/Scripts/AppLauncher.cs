@@ -19,7 +19,7 @@ public class AppLauncher : MonoBehaviour
         {
             process = new Process();
             process.EnableRaisingEvents = false;
-            process.StartInfo.FileName = Application.dataPath + "/../Executables/" + AppName;
+            process.StartInfo.FileName = Application.persistentDataPath + "/Executables/" + AppName;
             process.StartInfo.Arguments = AppArgs;
             process.StartInfo.UseShellExecute = false;
             process.StartInfo.RedirectStandardOutput = true;
@@ -57,7 +57,7 @@ public class AppLauncher : MonoBehaviour
 
     public void KillProcess()
     {
-        if (process != null || !process.HasExited)
+        if (process != null && !process.HasExited)
         {
             process.Kill();
         }
