@@ -293,6 +293,7 @@ public class DracoCurl : MonoBehaviour
         //Play the read files to the user
         if (playerReady && loadedMeshes.Count > 0)
         {
+            DestroyImmediate(currentMesh);
             loadedMeshes.TryDequeue(out currentMesh);
             PlaySingleFile();
         }
