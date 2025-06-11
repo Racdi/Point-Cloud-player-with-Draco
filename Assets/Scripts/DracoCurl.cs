@@ -17,6 +17,7 @@ using System.Runtime.InteropServices.ComTypes;
 using UnityEngine.UIElements;
 using System.Linq;
 using Unity.VisualScripting;
+using UnityEngine.Scripting;
 
 public class DracoCurl : MonoBehaviour
 {
@@ -148,19 +149,22 @@ public class DracoCurl : MonoBehaviour
                 await Task.Delay(1);
             }
 
-            if (position == dracoFiles.Length - 1)
-            {
-                currentPosition = -1;
-            }
-            else
-            {
-                currentPosition = position;
-            }
-            
             Debug.Log("Current file is: " + fileName);
             loadedMeshes.Enqueue(tempMesh);
         }
-
+        else
+        {
+            await Task.Delay(1);
+        }
+        if (position == dracoFiles.Length - 1)
+        {
+            currentPosition = -1;
+        }
+        else
+        {
+            currentPosition = position;
+        }
+        
         if(position == playIndex - 1 || position == dracoFiles.Length - 1)
         {
             isReading = false;
@@ -268,7 +272,7 @@ public class DracoCurl : MonoBehaviour
         if (haltDownloading == false && isReading == false && loadedMeshes.Count < batchSize)
         {
             haltDownloading = true;
-            string appArgs = "--http3 --parallel";
+            string appArgs = "--http2 --parallel";
             for (int i = 0; i < batchSize; i++ )
             {
                 string filepath = dracoFiles[i + PlayIndex];
