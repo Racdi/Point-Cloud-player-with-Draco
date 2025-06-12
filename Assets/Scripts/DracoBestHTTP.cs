@@ -185,7 +185,7 @@ public class DracoBestHTTP : MonoBehaviour
 // FIXED: Convert async Task back to IEnumerator coroutine
     IEnumerator PlayBuffer(Mesh[] currentBuffer)
     {
-        Debug.Log($"Starting to play buffer with {bufferSize} frames");
+        //Debug.Log($"Starting to play buffer with {bufferSize} frames");
 
         float frameInterval = 1.0f / FPS; // Time between frames in seconds
 
@@ -193,10 +193,14 @@ public class DracoBestHTTP : MonoBehaviour
         {
             float frameStartTime = Time.realtimeSinceStartup;
 
-            Debug.Log("Showing frame number " + i);
+            //Debug.Log("Showing frame number " + i);
 
-            // Set the current frame mesh
-            particlesScript.Set(currentBuffer[i]);
+            if (currentBuffer[i].vertexCount > 0)
+            {
+                Debug.Log("Play frame");
+                // Set the current frame mesh
+                particlesScript.Set(currentBuffer[i]);
+            }
             //counter.Tick();
 
             // Calculate how long to wait for next frame
@@ -216,7 +220,7 @@ public class DracoBestHTTP : MonoBehaviour
         }
 
         playBufferReady = true;
-        Debug.Log("Finished playing buffer");
+        //Debug.Log("Finished playing buffer");
     }
 
 
@@ -227,6 +231,7 @@ public class DracoBestHTTP : MonoBehaviour
 
         wr.DownloadSettings.ContentStreamMaxBuffered = 1024 * 1024 * 4; //4 MB
         wr.DownloadSettings.DisableCache = true;
+        wr.TimeoutSettings.Timeout = new TimeSpan(0,0,1); //
         //uwr.certificateHandler = new BypassCertificateHandler();
         //uwr.downloadHandler = new DownloadHandlerBuffer();
         wr.Send();
@@ -255,6 +260,7 @@ public class DracoBestHTTP : MonoBehaviour
                 break;
             default:
                 Debug.LogError($"Request finished with error! Request state: {wr.State}");
+                callbackOnFinish(null, bufferIndex);
                 break;
         }
         
@@ -263,10 +269,15 @@ public class DracoBestHTTP : MonoBehaviour
     
     async void OnRequestComplete(byte[] stream, int bufferIndex)
     {
-        // Async decoding has to start on the main thread and spawns multiple C# jobs.
         var meshDataArray = Mesh.AllocateWritableMeshData(1);
-        var result = await DracoDecoder.DecodeMesh(meshDataArray[0], stream);
-        if (isCurrentBuffer1 == false) {
+        if (stream != null)
+        {
+            // Async decoding has to start on the main thread and spawns multiple C# jobs.
+            var result = await DracoDecoder.DecodeMesh(meshDataArray[0], stream);
+        }
+        
+        if (isCurrentBuffer1 == false)
+        {
             Mesh.ApplyAndDisposeWritableMeshData(meshDataArray, buffer0[bufferIndex]);
         }
         else
