@@ -182,43 +182,51 @@ public class DracoBestHTTP : MonoBehaviour
         return "<a href=\"(?<name>.+drc)\">.+drc</a>";
     }
 
-    async Task PlayBuffer(Mesh[] currentBuffer)
+// FIXED: Convert async Task back to IEnumerator coroutine
+    IEnumerator PlayBuffer(Mesh[] currentBuffer)
     {
-        float startTime = Time.realtimeSinceStartup;
+        Debug.Log($"Starting to play buffer with {bufferSize} frames");
+
+        float frameInterval = 1.0f / FPS; // Time between frames in seconds
+
         for (int i = 0; i < bufferSize; i++)
         {
-            //Debug.Log("Showing frame number " + i);
-            
-            //var verticesList = new List<Vector3>(deepCopy[i].vertices);
-            //var colorsList = new List<Color32>(deepCopy[i].colors32);
+            float frameStartTime = Time.realtimeSinceStartup;
 
+            Debug.Log("Showing frame number " + i);
+
+            // Set the current frame mesh
             particlesScript.Set(currentBuffer[i]);
+            //counter.Tick();
 
-            float elapsedS = Time.realtimeSinceStartup - startTime;
-            float elapsedMS = elapsedS * 1000;
-            
-            //Debug.Log(elapsedMS);
-            if (elapsedMS < inverseFPS)
+            // Calculate how long to wait for next frame
+            float frameElapsed = Time.realtimeSinceStartup - frameStartTime;
+            float waitTime = frameInterval - frameElapsed;
+
+            if (waitTime > 0)
             {
-                int delay = (int)Math.Round(inverseFPS - elapsedMS);
-                //Debug.Log("Must wait " + delay);
-                await Task.Delay(delay);
+                // Wait for the remaining frame time using Unity's WaitForSeconds
+                yield return new WaitForSeconds(waitTime);
             }
             else
             {
-                await Task.Delay(1);
+                // If we're running behind, yield for one frame
+                yield return null;
             }
-                counter.Tick();
-                startTime = Time.realtimeSinceStartup;
         }
+
         playBufferReady = true;
-        //Debug.Log("Finished playing buffer");
+        Debug.Log("Finished playing buffer");
     }
+
 
     IEnumerator getRequest(string uri, System.Action<byte[], int> callbackOnFinish, int bufferIndex)
     {
-        Debug.Log(uri);
+        //Debug.Log(uri);
         var wr = HTTPRequest.CreateGet(uri);
+
+        wr.DownloadSettings.ContentStreamMaxBuffered = 1024 * 1024 * 4; //4 MB
+        wr.DownloadSettings.DisableCache = true;
         //uwr.certificateHandler = new BypassCertificateHandler();
         //uwr.downloadHandler = new DownloadHandlerBuffer();
         wr.Send();
@@ -285,22 +293,6 @@ public class DracoBestHTTP : MonoBehaviour
             }
             
         }
-    }
-    private byte[] Combine(List<byte[]> arrays)
-    {
-        int size = 0;
-        foreach (byte[] array in arrays)
-        {
-            size += array.Length;
-        }
-        byte[] rv = new byte[size];
-        int offset = 0;
-        foreach (byte[] array in arrays)
-        {
-            System.Buffer.BlockCopy(array, 0, rv, offset, array.Length);
-            offset += array.Length;
-        }
-        return rv;
     }
     public void SetNewAddress(string newAddress)
     {
@@ -453,12 +445,12 @@ public class DracoBestHTTP : MonoBehaviour
 
                 if(isCurrentBuffer1 == false)
                 {
-                    PlayBuffer(buffer0);
+                    StartCoroutine(PlayBuffer(buffer0));
                     isCurrentBuffer1 = true;
                 }
                 else
                 {
-                    PlayBuffer(buffer1);
+                    StartCoroutine(PlayBuffer(buffer1));
                     isCurrentBuffer1 = false;
 
                 }
