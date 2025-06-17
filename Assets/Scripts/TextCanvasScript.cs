@@ -12,7 +12,7 @@ public class TextCanvasScript : MonoBehaviour
 
     void Awake()
     {
-        controls.XR.EnableUI.performed += _ => SwitchUI();
+        //controls.XR.EnableUI.performed += _ => SwitchUI();
     }
 
     void OnEnable()

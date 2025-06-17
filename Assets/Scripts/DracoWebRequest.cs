@@ -104,7 +104,13 @@ public class DracoWebRequest : MonoBehaviour
 
     void UpdateDracoFiles()
     {
-        StartCoroutine(GetFilesFromHTTP(RemoteHostPath, (val) => { dracoFiles = val; }));
+        //StartCoroutine(GetFilesFromHTTP(fullHostPath, (val) => { dracoFiles = val; }));
+
+        dracoFiles = new string[300];
+        for (int i = 0; i < 300; i++) //Disgustingly hardcoded solution
+        {
+            dracoFiles[i] = (1000 + i) + ".drc";
+        }
     }
     public class BypassCertificateHandler : CertificateHandler
     {
@@ -195,8 +201,8 @@ public class DracoWebRequest : MonoBehaviour
 
     IEnumerator getRequest(string uri, System.Action<byte[], int> callbackOnFinish, int bufferIndex)
     {
-        
-        UnityWebRequest uwr = UnityWebRequest.Get(uri);
+        //Debug.Log(RemoteHostPath + uri);
+        UnityWebRequest uwr = UnityWebRequest.Get(RemoteHostPath + uri);
         uwr.certificateHandler = new BypassCertificateHandler();
         uwr.downloadHandler = new DownloadHandlerBuffer();
         yield return uwr.SendWebRequest();

@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.75663555, g: 0.7769151, b: 0.85720664, a: 1}
+  m_IndirectSpecularColor: {r: 0.8004218, g: 0.8214107, b: 0.90370345, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -386,7 +386,7 @@ MonoBehaviour:
   m_CaretColor: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
   m_CustomCaretColor: 0
   m_SelectionColor: {r: 0.65882355, g: 0.80784315, b: 1, a: 0.7529412}
-  m_Text: https://10.1.5.1/dracoSimple/
+  m_Text: https://ateixs.me/draco/
   m_CaretBlinkRate: 0.85
   m_CaretWidth: 1
   m_ReadOnly: 0
@@ -1467,7 +1467,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "10.1.5.1\u200B"
+  m_text: "ateixs.me\u200B"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -3584,7 +3584,7 @@ MonoBehaviour:
   m_CaretColor: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
   m_CustomCaretColor: 0
   m_SelectionColor: {r: 0.65882355, g: 0.80784315, b: 1, a: 0.7529412}
-  m_Text: 10.1.5.1
+  m_Text: ateixs.me
   m_CaretBlinkRate: 0.85
   m_CaretWidth: 1
   m_ReadOnly: 0
@@ -4194,7 +4194,7 @@ VisualEffect:
       - m_Value: 0.002
         m_Name: Scale
         m_Overridden: 1
-      - m_Value: 3
+      - m_Value: 1.8
         m_Name: ParticleSize
         m_Overridden: 1
     m_Vector2f:
@@ -4547,9 +4547,9 @@ MonoBehaviour:
   m_HandleRect: {fileID: 1522295195}
   m_Direction: 0
   m_MinValue: 0.1
-  m_MaxValue: 20
+  m_MaxValue: 5
   m_WholeNumbers: 0
-  m_Value: 2
+  m_Value: 1.8
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls:
@@ -5002,7 +5002,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "https://10.1.5.1/dracoSimple/\u200B"
+  m_text: "https://ateixs.me/draco/\u200B"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -5247,10 +5247,10 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   ReadMode: 0
-  RemoteHostPath: https://10.1.5.1/dracoSimple/
-  ipHostPath: 10.1.5.1
+  RemoteHostPath: https://ateixs.me/draco/
+  ipHostPath: ateixs.me
   sliceAddressList:
-  - 443
+  - 8443
   - 5002
   - 5001
   CheckSlicesTimestampEnabled: 0
@@ -5291,7 +5291,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   VFX: {fileID: 1630351990}
   particleScale: 0.002
-  particleSize: 5
+  particleSize: 2
   particleDistanceCompensation: 4
   distanceReference: {fileID: 1480000086}
 --- !u!114 &6798676864414862249
